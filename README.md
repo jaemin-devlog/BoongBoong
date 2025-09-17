@@ -54,8 +54,8 @@
 | Frontend | Next.js, Tailwind CSS, React Hook Form, PWA |
 | Backend | Spring Boot 3.x (Java 21), Gradle, Spring Security(세션 기반), Spring Session(Redis) |
 | Database | MySQL 8.x, Spring Data JPA, QueryDSL |
-| Caching & Session | Redis (세션 저장소, OTP 캐시, Pub/Sub) |
-| Storage & Security | AWS S3(면허 이미지), AWS KMS(암호화) |
+| Caching & Session | Redis (OTP 캐시, Pub/Sub) |
+| Storage & Security | AWS KMS(암호화) |
 | Real-time Chat | Spring WebSocket, STOMP, SockJS, Redis Pub/Sub |
 | Email & External API | Spring Mail(학교 메일 OTP), 운전면허 진위확인 API |
 | DevOps | Docker, GitHub Actions(CI/CD), AWS EC2, Nginx(HTTPS/리버스 프록시) |
@@ -67,7 +67,7 @@
 | 항목 | 정책 |
 |------|------|
 | 로그인 | 서버 세션 생성 후 `JSESSIONID` HttpOnly 쿠키 발급 |
-| 세션 저장소 | Spring Session + Redis (수평 확장 지원) |
+| 세션 저장소 | Spring Session |
 | 쿠키 보안 | HttpOnly, Secure, SameSite=Lax(또는 Strict) |
 | CSRF 보호 | POST/PUT/DELETE 요청 시 CSRF 토큰 적용 |
 | 세션 ID 회전 | 로그인/권한 상승 시 Session Fixation 방지 |
