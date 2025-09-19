@@ -13,12 +13,13 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
-
-import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
@@ -40,13 +41,32 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 
-    // DaoAuthenticationProvider 등록
+    // DB 기반 사용자 인증 Provider
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(jpaUserDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
+    }
+
+    // 관리자 계정을 In-Memory에 등록 (평문 비밀번호 → bcrypt 변환)
+    @Bean
+    public InMemoryUserDetailsManager inMemoryUserDetailsManager(PasswordEncoder encoder) {
+        if (!adminProps.isEnabled()) {
+            return new InMemoryUserDetailsManager(); // admin 기능 꺼져 있으면 빈 유저 매니저
+        }
+
+        String rawPassword = adminProps.getPassword(); // 평문 비밀번호
+        String encodedPassword = encoder.encode(rawPassword); // bcrypt 변환
+
+        UserDetails adminUser = User.builder()
+                .username(adminProps.getUsername())
+                .password(encodedPassword)
+                .roles(adminProps.getRole()) // "ADMIN"
+                .build();
+
+        return new InMemoryUserDetailsManager(adminUser);
     }
 
     @Bean
@@ -83,7 +103,7 @@ public class SecurityConfig {
                 )
                 .httpBasic(b -> b.disable())
                 .formLogin(f -> f.disable())
-                .authenticationProvider(authenticationProvider());
+                .authenticationProvider(authenticationProvider()); // DB 인증 Provider 등록
 
         return http.build();
     }

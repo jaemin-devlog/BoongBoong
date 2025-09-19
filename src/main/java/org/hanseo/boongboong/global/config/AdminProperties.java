@@ -10,7 +10,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class AdminProperties {
     private boolean enabled;
     private String username;
-    private String passwordBcrypt;
+    private String password; // ⚡ 평문 비밀번호 입력
     private String role;
 }
+
 
