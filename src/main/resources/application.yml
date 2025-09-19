@@ -1,0 +1,47 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/boongboong_db?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
+    username: root
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+admin:
+  auth:
+    enabled: true
+    username: ${ADMIN_USERNAME}
+    password-bcrypt: ${ADMIN_PASSWORD}
+    role: ADMIN
+
+
+app:
+  email:
+    domains:
+      allowed:
+        - office.hanseo.ac.kr
