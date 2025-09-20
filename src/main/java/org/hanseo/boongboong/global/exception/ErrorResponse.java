@@ -1,31 +1,32 @@
 package org.hanseo.boongboong.global.exception;
 
-import lombok.Builder;
-import lombok.Getter;
+import org.slf4j.MDC;
 
-@Getter
-public class ErrorResponse {
-    private final String message;
-    private final String code;
+import java.time.OffsetDateTime;
+import java.util.Map;
 
-    @Builder
-    public ErrorResponse(String message, String code) {
-        this.message = message;
-        this.code = code;
+public record ErrorResponse(
+        String code,
+        String message,
+        int status,
+        String path,
+        String timestamp,
+        String traceId,
+        Map<String, String> details
+) {
+    public static ErrorResponse of(ErrorCode ec, String path) {
+        return of(ec, path, null);
     }
 
-    public static ErrorResponse of(ErrorCode errorCode) {
-        return ErrorResponse.builder()
-                .message(errorCode.getMessage())
-                .code(errorCode.getCode())
-                .build();
-    }
-
-    public static ErrorResponse of(ErrorCode errorCode, String message) {
-        return ErrorResponse.builder()
-                .message(message)
-                .code(errorCode.getCode())
-                .build();
+    public static ErrorResponse of(ErrorCode ec, String path, Map<String, String> details) {
+        return new ErrorResponse(
+                ec.getCode(),
+                ec.getMessage(),
+                ec.getStatus().value(),
+                path,
+                OffsetDateTime.now().toString(),
+                MDC.get("traceId"),
+                details
+        );
     }
 }
-
