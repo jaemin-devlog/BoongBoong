@@ -1,5 +1,5 @@
 // domain/auth/dto/LoginRequest.java
-package org.hanseo.boongboong.domain.auth.dto;
+package org.hanseo.boongboong.domain.auth.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 
