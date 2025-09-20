@@ -33,15 +33,6 @@ spring:
           starttls:
             enable: true
 
-admin:
-  auth:
-    enabled: true
-    username: ${ADMIN_USERNAME}
-    password: ${ADMIN_PASSWORD}
-    role: ADMIN
-
-
-
 app:
   email:
     domains:
