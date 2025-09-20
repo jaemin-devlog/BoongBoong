@@ -3,9 +3,12 @@ package org.hanseo.boongboong.domain.auth.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.hanseo.boongboong.domain.auth.dto.LoginRequest;
-import org.hanseo.boongboong.domain.auth.dto.LoginResponse;
+import org.hanseo.boongboong.domain.auth.dto.request.LoginRequest;
+import org.hanseo.boongboong.domain.auth.dto.request.LoginResponse;
+import org.hanseo.boongboong.domain.auth.dto.request.ResetPasswordRequest;
 import org.hanseo.boongboong.domain.auth.service.AuthService;
+import org.hanseo.boongboong.domain.user.dto.request.EmailSendRequest;
+import org.hanseo.boongboong.domain.user.dto.request.EmailVerifyRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -44,6 +47,28 @@ public class AuthController {
         SecurityContextHolder.clearContext();
         return ResponseEntity.noContent().build();
     }
+    /** 비밀번호 재설정 코드 발송 */
+    @PostMapping("/password/reset-code")
+    public ResponseEntity<MessageResponse> sendResetCode(@RequestBody EmailSendRequest req) {
+        authService.requestPasswordReset(req);
+        return ResponseEntity.ok(new MessageResponse("RESET_CODE_SENT"));
+    }
 
+    /** 비밀번호 재설정 코드 검증 */
+    @PostMapping("/password/verify-code")
+    public ResponseEntity<MessageResponse> verifyResetCode(@RequestBody EmailVerifyRequest req) {
+        boolean ok = authService.verifyPasswordResetCode(req);
+        return ResponseEntity.ok(new MessageResponse(ok ? "CODE_VERIFIED" : "CODE_INVALID"));
+    }
+
+    /** 비밀번호 재설정 실행 */
+    @PostMapping("/password/reset")
+    public ResponseEntity<MessageResponse> resetPassword(@RequestBody ResetPasswordRequest req) {
+        authService.resetPassword(req);
+        return ResponseEntity.ok(new MessageResponse("PASSWORD_RESET_DONE"));
+    }
+
+    /** 간단 성공 응답 */
+    private record MessageResponse(String message) {}
     private record ErrorBody(String message, String path, int status) {}
 }

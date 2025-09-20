@@ -37,6 +37,8 @@ public class EmailService {
     private static final long VERIFICATION_CODE_EXPIRATION_MINUTES = 5; // 인증코드 유효 시간 (5분)
     private static final int MAX_VERIFICATION_ATTEMPTS = 5;             // 최대 허용 실패 횟수
 
+    /** ===================== 회원가입용 이메일 인증 ===================== */
+
     /**
      * 인증 메일 발송
      */
@@ -80,9 +82,10 @@ public class EmailService {
             log.info("[EmailService] 인증 코드를 보냈습니다. {}", email);
         } catch (MessagingException e) {
             log.error("[EmailService] 인증 코드를 보내는 데 실패했습니다. {}: {}", email, e.getMessage());
-            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
+            throw new BusinessException(ErrorCode.INTERNAL_ERROR);
         }
     }
+
     /**
      * 인증 코드 검증
      */
@@ -141,6 +144,102 @@ public class EmailService {
         verifiedEmails.remove(email); // Also clear from verifiedEmails
     }
 
+    /** ===================== 비밀번호 재설정용 코드 ===================== */
+
+    // reset 전용 저장소
+    private final Map<String, String> resetCodes = new ConcurrentHashMap<>();               // email -> 재설정 코드
+    private final Map<String, LocalDateTime> resetCreationTimes = new ConcurrentHashMap<>();// email -> 생성 시각
+    private final Map<String, Integer> resetAttempts = new ConcurrentHashMap<>();           // email -> 실패 횟수
+    private final Map<String, Boolean> resetVerifiedEmails = new ConcurrentHashMap<>();     // email -> 코드 검증 성공 여부
+
+    private static final long RESET_CODE_EXPIRATION_MINUTES = 10; // 재설정 코드 유효시간(10분)
+    private static final int RESET_MAX_ATTEMPTS = 5;              // 재설정 실패 허용 횟수
+
+    /**
+     * 비밀번호 재설정 코드 발송
+     */
+    @Transactional
+    public void sendPasswordResetEmail(String email) {
+        // 1분 내 재요청 방지
+        if (resetCreationTimes.containsKey(email) &&
+                resetCreationTimes.get(email).plusMinutes(1).isAfter(LocalDateTime.now())) {
+            throw new BusinessException(ErrorCode.TOO_FREQUENT_EMAIL_REQUEST);
+        }
+
+        String code = generateVerificationCode();
+        resetCodes.put(email, code);
+        resetCreationTimes.put(email, LocalDateTime.now());
+        resetAttempts.put(email, 0);
+        resetVerifiedEmails.remove(email); // 이전 플래그 제거
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(email);
+            helper.setSubject("[붕붕] 비밀번호 재설정 코드");
+
+            Map<String, String> tokens = new HashMap<>();
+            tokens.put("code", code);
+            String htmlContent = templateRenderer.renderVerificationHtml(tokens); // 동일 템플릿 사용
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            log.info("[EmailService] 비밀번호 재설정 코드를 보냈습니다. {}", email);
+        } catch (MessagingException e) {
+            log.error("[EmailService] 비밀번호 재설정 코드 발송 실패 {}: {}", email, e.getMessage());
+            throw new BusinessException(ErrorCode.INTERNAL_ERROR);
+        }
+    }
+
+    /**
+     * 비밀번호 재설정 코드 검증
+     */
+    @Transactional
+    public boolean verifyPasswordResetCode(String email, String code) {
+        if (!resetCodes.containsKey(email) || !resetCreationTimes.containsKey(email)) {
+            throw new BusinessException(ErrorCode.EMAIL_CODE_EXPIRED);
+        }
+        if (resetCreationTimes.get(email).plusMinutes(RESET_CODE_EXPIRATION_MINUTES).isBefore(LocalDateTime.now())) {
+            resetCodes.remove(email);
+            resetCreationTimes.remove(email);
+            resetAttempts.remove(email);
+            throw new BusinessException(ErrorCode.EMAIL_CODE_EXPIRED);
+        }
+        if (!resetCodes.get(email).equals(code)) {
+            resetAttempts.compute(email, (k, v) -> v == null ? 1 : v + 1);
+            if (resetAttempts.get(email) >= RESET_MAX_ATTEMPTS) {
+                resetCodes.remove(email);
+                resetCreationTimes.remove(email);
+                resetAttempts.remove(email);
+                log.warn("[EmailService] 재설정 코드 실패 횟수 초과 {}", email);
+            }
+            throw new BusinessException(ErrorCode.EMAIL_CODE_MISMATCH);
+        }
+
+        resetCodes.remove(email);
+        resetCreationTimes.remove(email);
+        resetAttempts.remove(email);
+        resetVerifiedEmails.put(email, true);
+        log.info("[EmailService] Reset code verified: {}", email);
+        return true;
+    }
+
+    /** 재설정 코드 검증 성공 여부 */
+    public boolean isPasswordResetVerified(String email) {
+        return resetVerifiedEmails.containsKey(email);
+    }
+
+    /** 재설정 완료 후 관련 데이터 삭제 */
+    public void clearPasswordResetFlag(String email) {
+        resetCodes.remove(email);
+        resetCreationTimes.remove(email);
+        resetAttempts.remove(email);
+        resetVerifiedEmails.remove(email);
+    }
+
+    /** ===================== 공통 유틸 & 청소 스케줄러 ===================== */
+
     /**
      * 6자리 랜덤 인증 코드 생성
      */
@@ -154,13 +253,23 @@ public class EmailService {
     @Scheduled(fixedRate = 60000) // Run every 1 minute
     public void cleanupExpiredCodes() {
         LocalDateTime now = LocalDateTime.now();
+        // 회원가입 코드 청소
         codeCreationTimes.forEach((email, creationTime) -> {
             if (creationTime.plusMinutes(VERIFICATION_CODE_EXPIRATION_MINUTES).isBefore(now)) {
-                log.info("[EmailService] Cleaning up expired code for {}", email);
+                log.info("[EmailService] Cleaning up expired signup code for {}", email);
                 verificationCodes.remove(email);
                 codeCreationTimes.remove(email);
                 verificationAttempts.remove(email);
                 // verifiedEmails는 성공한 경우만 담기므로 여기서 제거하지 않음
+            }
+        });
+        // 재설정 코드 청소
+        resetCreationTimes.forEach((email, creationTime) -> {
+            if (creationTime.plusMinutes(RESET_CODE_EXPIRATION_MINUTES).isBefore(now)) {
+                log.info("[EmailService] Cleaning up expired reset code for {}", email);
+                resetCodes.remove(email);
+                resetCreationTimes.remove(email);
+                resetAttempts.remove(email);
             }
         });
     }
