@@ -11,21 +11,15 @@ import java.util.Optional;
  */
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    /**
-     * 주어진 로그인 ID가 데이터베이스에 존재하는지 확인합니다.
-     * 회원가입 시 ID 중복 검사에 사용됩니다.
-     */
+    /** 닉네임 중복 체크 */
     boolean existsByNickname(String nickname);
 
-    /**
-     * 주어진 이메일이 데이터베이스에 존재하는지 확인합니다.
-     * 회원가입 시 이메일 중복 검사에 사용됩니다.
-     */
+    /** 이메일 중복 체크 */
     boolean existsByEmail(String email);
 
-    /**
-     * 주어진 이메일을 가진 사용자를 찾습니다.
-     * 로그인 처리 등 사용자 조회가 필요할 때 사용됩니다.
-     */
+    /** 이메일로 조회 */
     Optional<User> findByEmail(String email);
+
+    /** username으로 조회 */
+    Optional<User> findByUsername(String username);
 }
