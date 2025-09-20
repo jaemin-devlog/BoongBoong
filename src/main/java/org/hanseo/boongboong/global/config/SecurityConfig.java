@@ -1,9 +1,11 @@
 package org.hanseo.boongboong.global.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.hanseo.boongboong.global.exception.ErrorCode;
-import org.hanseo.boongboong.global.security.JsonAuthEntryPoint;
 import org.hanseo.boongboong.domain.user.service.JpaUserDetailsService;
+import org.hanseo.boongboong.global.exception.ErrorCode;
+import org.hanseo.boongboong.global.exception.ErrorResponse;
+import org.hanseo.boongboong.global.security.JsonAuthEntryPoint;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,75 +37,79 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // AuthenticationManager를 Bean으로 등록
+    /** AuthenticationManager 등록 */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
 
-    // DB 기반 사용자 인증 Provider
+    /** DB(UserDetailsService) 기반 인증 Provider */
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(jpaUserDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
-        return authProvider;
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(jpaUserDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
     }
 
-    // 관리자 계정을 In-Memory에 등록 (평문 비밀번호 → bcrypt 변환)
+    /** 관리자 인메모리 계정 (옵션) */
     @Bean
     public InMemoryUserDetailsManager inMemoryUserDetailsManager(PasswordEncoder encoder) {
         if (!adminProps.isEnabled()) {
-            return new InMemoryUserDetailsManager(); // admin 기능 꺼져 있으면 빈 유저 매니저
+            return new InMemoryUserDetailsManager();
         }
-
-        String rawPassword = adminProps.getPassword(); // 평문 비밀번호
-        String encodedPassword = encoder.encode(rawPassword); // bcrypt 변환
-
-        UserDetails adminUser = User.builder()
+        String encoded = encoder.encode(adminProps.getPassword());
+        UserDetails admin = User.builder()
                 .username(adminProps.getUsername())
-                .password(encodedPassword)
-                .roles(adminProps.getRole()) // "ADMIN"
+                .password(encoded)
+                .roles(adminProps.getRole()) // 예: "ADMIN"
                 .build();
-
-        return new InMemoryUserDetailsManager(adminUser);
+        return new InMemoryUserDetailsManager(admin);
     }
 
+    /** 403 JSON 응답 */
     @Bean
     public AccessDeniedHandler accessDeniedHandler() {
-        return (request, response, accessDeniedException) -> {
-            response.setStatus(ErrorCode.ACCESS_DENIED.getStatus().value());
+        ObjectMapper om = new ObjectMapper();
+        return (request, response, ex) -> {
+            ErrorCode ec = ErrorCode.ACCESS_DENIED;
+            ErrorResponse body = ErrorResponse.of(ec, request.getRequestURI());
+            response.setStatus(ec.getStatus().value());
             response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write(ErrorCode.ACCESS_DENIED.toJson());
+            response.getWriter().write(om.writeValueAsString(body));
         };
     }
 
+    /** 보안 필터 체인 */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            AccessDeniedHandler accessDeniedHandler) throws Exception {
+
         http
-                .cors(c -> {}) // 필요 시 CorsConfigurationSource 등록
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                .cors(c -> {})                                   // 필요 시 CorsConfigurationSource 빈 등록
+                .csrf(csrf -> csrf.disable())                    // 세션 기반 API이면 상황에 따라 켜도 됨
+                .sessionManagement(sm -> sm
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)) // 세션 사용
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(jsonAuthEntryPoint)
-                        .accessDeniedHandler(accessDeniedHandler)
-                )
+                        .authenticationEntryPoint(jsonAuthEntryPoint) // 401 JSON
+                        .accessDeniedHandler(accessDeniedHandler))    // 403 JSON
                 .authorizeHttpRequests(auth -> auth
+                        // 인증 불필요
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/auth/logout",
                                 "/api/users/email/**",
                                 "/api/users/signup"
                         ).permitAll()
-                        .requestMatchers("/api/auth/me").authenticated()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .anyRequest().authenticated()
-                )
+                        // 권한 필요
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/auth/me").authenticated()
+                        // 그 외 전부 인증
+                        .anyRequest().authenticated())
                 .httpBasic(b -> b.disable())
                 .formLogin(f -> f.disable())
-                .authenticationProvider(authenticationProvider()); // DB 인증 Provider 등록
+                .authenticationProvider(authenticationProvider());
 
         return http.build();
     }
