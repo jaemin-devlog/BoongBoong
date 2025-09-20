@@ -37,10 +37,12 @@ public class UserService {
             throw new BusinessException(ErrorCode.EMAIL_NOT_VERIFIED);
         }
         if (userRepository.existsByEmail(dto.email())) { // 이미 존재하는 이메일인 경우
-            throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
+            // DUPLICATE_EMAIL → EMAIL_ALREADY_EXISTS 로 변경
+            throw new BusinessException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
         if (userRepository.existsByNickname(dto.nickname())) { // 이미 존재하는 닉네임인 경우
-            throw new BusinessException(ErrorCode.DUPLICATE_NICKNAME);
+            // DUPLICATE_NICKNAME → NICKNAME_ALREADY_EXISTS 로 변경
+            throw new BusinessException(ErrorCode.NICKNAME_ALREADY_EXISTS);
         }
         String encodedPw = passwordEncoder.encode(dto.password()); // 사용자의 비밀번호를 암호화
 
@@ -63,6 +65,16 @@ public class UserService {
         log.info("[UserService] 회원가입 완료. userId={}, email={}", saved.getId(), saved.getEmail()); // 회원가입 완료 로그 기록
         return saved.getId(); // 생성된 ID 반환
     }
+    @Transactional
+    public void resetPassword(String email, String rawPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        String encoded = passwordEncoder.encode(rawPassword);
+        user.setPassword(encoded);
+        userRepository.save(user);
+        log.info("[UserService] 비밀번호 재설정 완료. email={}", email);
+    }
+
 
     @Transactional(readOnly = true) // 데이터 조회 읽기 전용 트랜잭션 적용
     public boolean isEmailExists(String email) {    // 이메일 중복 여부

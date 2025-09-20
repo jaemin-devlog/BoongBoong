@@ -38,5 +38,9 @@ public class User extends BaseEntity {
 
     private int trustScore; // 신뢰 점수
     private int points; // 포인트
+
+    public void setPassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
 }
 
