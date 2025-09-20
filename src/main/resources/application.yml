@@ -6,7 +6,6 @@ spring:
     url: jdbc:mysql://localhost:3306/boongboong_db?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
     username: root
     password: ${DB_PASSWORD}
-
   jpa:
     hibernate:
       ddl-auto: update
@@ -14,6 +13,8 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
 
   data:
     redis:
@@ -36,8 +37,9 @@ admin:
   auth:
     enabled: true
     username: ${ADMIN_USERNAME}
-    password-bcrypt: ${ADMIN_PASSWORD}
+    password: ${ADMIN_PASSWORD}
     role: ADMIN
+
 
 
 app:
