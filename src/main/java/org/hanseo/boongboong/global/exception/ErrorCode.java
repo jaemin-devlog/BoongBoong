@@ -30,7 +30,11 @@ public enum ErrorCode {
 
     // 보안/인증
     AUTHENTICATION_FAILED("AUTHENTICATION_FAILED", HttpStatus.UNAUTHORIZED, "인증에 실패했습니다."),
-    UNAUTHORIZED("UNAUTHORIZED", HttpStatus.UNAUTHORIZED, "인증이 필요합니다.");
+    UNAUTHORIZED("UNAUTHORIZED", HttpStatus.UNAUTHORIZED, "인증이 필요합니다."),
+
+    // 카풀
+    INVALID_DATE_TIME("INVALID_DATE_TIME", HttpStatus.BAD_REQUEST, "과거 날짜 또는 시간으로 카풀을 등록할 수 없습니다."),
+    INVALID_SEAT_COUNT("INVALID_SEAT_COUNT", HttpStatus.BAD_REQUEST, "좌석 수는 1에서 8 사이여야 합니다.");
 
     private final String code;
     private final HttpStatus status;
