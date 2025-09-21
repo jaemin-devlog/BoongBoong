@@ -5,48 +5,64 @@ import lombok.RequiredArgsConstructor;
 import org.hanseo.boongboong.domain.user.dto.request.EmailVerifyRequest;
 import org.hanseo.boongboong.domain.user.dto.request.EmailSendRequest;
 import org.hanseo.boongboong.domain.user.dto.request.SignUpRequestDto;
+import org.hanseo.boongboong.domain.user.dto.response.EmailSendRes;
+import org.hanseo.boongboong.domain.user.dto.response.EmailVerifyRes;
+import org.hanseo.boongboong.domain.user.dto.response.SignUpRes;
+import org.hanseo.boongboong.domain.user.entity.User;
+import org.hanseo.boongboong.domain.user.mapper.UserMapper;
+import org.hanseo.boongboong.domain.user.repository.UserRepository;
 import org.hanseo.boongboong.domain.user.service.EmailService;
 import org.hanseo.boongboong.domain.user.service.UserService;
+import org.hanseo.boongboong.global.exception.BusinessException;
+import org.hanseo.boongboong.global.exception.ErrorCode;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 사용자 가입/이메일 인증 컨트롤러
- * - 이메일 인증: EmailService
- * - 회원가입: UserService
- * 실패 케이스는 서비스에서 BusinessException(ErrorCode)로 던지고,
- * GlobalExceptionHandler가 일관된 에러 응답을 내려준다.
+ * 사용자 계정/이메일 인증 컨트롤러.
+ * - 회원가입, 인증 메일 발송/검증
  */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
 public class UserController {
 
-    private final UserService userService;   //회원가입 로직
-    private final EmailService emailService; // 이메일 인증 로직
+    private final UserService userService;       // 회원가입 로직
+    private final EmailService emailService;     // 이메일 인증 로직
+    private final UserRepository userRepository; // 저장된 사용자 조회
 
-    /** 회원가입 */
+    /** 회원가입: 201 + SignUpRes JSON 본문 반환 */
     @PostMapping("/signup")
-    public ResponseEntity<Void> signUp(@RequestBody @Valid SignUpRequestDto signUpRequestDto) {
-        userService.signup(signUpRequestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<SignUpRes> signUp(@Valid @RequestBody SignUpRequestDto dto) {
+        Long userId = userService.signup(dto); // 가입 처리(아바타 생성 포함)
+        User saved = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND)); // 저장 검증
+        SignUpRes body = UserMapper.toSignUpRes(saved); // 응답 매핑
+        return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
 
-    /** 이메일 인증 코드 발송 (쿨다운/TTL 적용)
-     * 1분 쿨다운, 5분 유효기간, 6자리 코드 전송
-     * */
+    /** 인증 메일 발송: 200 + JSON 바디 */
     @PostMapping("/email/request")
-    public ResponseEntity<Void> requestVerificationEmail(@RequestBody @Valid EmailSendRequest requestDto) {
-        emailService.sendVerificationEmail(requestDto.email());
-        return ResponseEntity.ok().build();
+    public ResponseEntity<EmailSendRes> requestVerificationEmail(@RequestBody @Valid EmailSendRequest requestDto) {
+        emailService.sendVerificationEmail(requestDto.email()); // 메일 발송
+        EmailSendRes res = EmailSendRes.builder()
+                .sent(true)
+                .cooldownSeconds(30)  // 재요청 쿨다운(초)
+                .ttlSeconds(300)      // 코드 유효기간(초)
+                .message("인증 코드를 전송했습니다.")
+                .build();
+        return ResponseEntity.ok(res);
     }
 
-    /** 이메일 인증 코드 확인 */
+    /** 인증 코드 검증: 200 + JSON 바디 */
     @PostMapping("/email/verify")
-    public ResponseEntity<Void> verifyEmail(@RequestBody @Valid EmailVerifyRequest requestDto) {
-        // 실패 시 서비스가 BusinessException을 던짐 → 전역 핸들러가 적절한 상태코드/본문 반환
-        emailService.verifyEmail(requestDto.email(), requestDto.code());
-        return ResponseEntity.ok().build();
+    public ResponseEntity<EmailVerifyRes> verifyEmail(@RequestBody @Valid EmailVerifyRequest requestDto) {
+        emailService.verifyEmail(requestDto.email(), requestDto.code()); // 코드 검증
+        EmailVerifyRes res = EmailVerifyRes.builder()
+                .verified(true)
+                .message("이메일 인증이 완료되었습니다.")
+                .build();
+        return ResponseEntity.ok(res);
     }
 }
