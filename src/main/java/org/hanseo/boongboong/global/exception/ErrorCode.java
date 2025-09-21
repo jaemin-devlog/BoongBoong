@@ -22,6 +22,7 @@ public enum ErrorCode {
     INVALID_EMAIL_DOMAIN("INVALID_EMAIL_DOMAIN", HttpStatus.BAD_REQUEST, "허용되지 않은 이메일 도메인입니다."),
     INVALID_EMAIL_FORMAT("INVALID_EMAIL_FORMAT", HttpStatus.BAD_REQUEST, "이메일 형식이 올바르지 않습니다."),
     USER_NOT_FOUND("USER_NOT_FOUND", HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다."),
+    INVALID_NICKNAME("INVALID_NICKNAME", HttpStatus.BAD_REQUEST, "닉네임이 유효하지 않습니다. 2~10자 범위로 입력하세요."),
 
     // 이메일 인증
     TOO_FREQUENT_EMAIL_REQUEST("TOO_FREQUENT_EMAIL_REQUEST", HttpStatus.TOO_MANY_REQUESTS, "요청이 너무 잦습니다."),
