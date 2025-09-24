@@ -1,3 +1,4 @@
+// src/main/java/org/hanseo/boongboong/global/exception/ErrorCode.java
 package org.hanseo.boongboong.global.exception;
 
 import lombok.AllArgsConstructor;
@@ -35,7 +36,18 @@ public enum ErrorCode {
 
     // 카풀
     INVALID_DATE_TIME("INVALID_DATE_TIME", HttpStatus.BAD_REQUEST, "과거 날짜 또는 시간으로 카풀을 등록할 수 없습니다."),
-    INVALID_SEAT_COUNT("INVALID_SEAT_COUNT", HttpStatus.BAD_REQUEST, "좌석 수는 1에서 8 사이여야 합니다.");
+    INVALID_SEAT_COUNT("INVALID_SEAT_COUNT", HttpStatus.BAD_REQUEST, "좌석 수는 1에서 8 사이여야 합니다."),
+
+    // 매칭/요청
+    POST_NOT_FOUND("POST_NOT_FOUND", HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
+    MATCH_NOT_FOUND("MATCH_NOT_FOUND", HttpStatus.NOT_FOUND, "매칭을 찾을 수 없습니다."),
+    MATCH_REQUEST_NOT_FOUND("MATCH_REQUEST_NOT_FOUND", HttpStatus.NOT_FOUND, "매칭 요청을 찾을 수 없습니다."),
+    INVALID_REQUEST("INVALID_REQUEST", HttpStatus.BAD_REQUEST, "요청 형식이 올바르지 않거나 허용되지 않습니다."),
+    INVALID_STATE("INVALID_STATE", HttpStatus.CONFLICT, "현재 상태에서 수행할 수 없는 동작입니다."),
+    SEAT_NOT_AVAILABLE("SEAT_NOT_AVAILABLE", HttpStatus.CONFLICT, "요청 좌석 수가 남은 좌석을 초과합니다."),
+    MATCH_FULL("MATCH_FULL", HttpStatus.CONFLICT, "이미 좌석이 가득 찼습니다."),
+    DUPLICATE_MEMBER("DUPLICATE_MEMBER", HttpStatus.CONFLICT, "이미 매칭에 참여 중입니다."),
+    OFFER_SEATS_REQUIRED("OFFER_SEATS_REQUIRED", HttpStatus.BAD_REQUEST, "드라이버 좌석 수가 필요합니다.");
 
     private final String code;
     private final HttpStatus status;
