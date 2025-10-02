@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.hanseo.boongboong.domain.carpool.entity.Post;
 import org.hanseo.boongboong.domain.carpool.repository.PostRepo;
 import org.hanseo.boongboong.domain.carpool.type.PostRole;
-import org.hanseo.boongboong.domain.chat.ChatService;
+
 import org.hanseo.boongboong.domain.match.dto.MatchDtos.*;
 import org.hanseo.boongboong.domain.match.entity.Match;
 import org.hanseo.boongboong.domain.match.entity.MatchMember;
@@ -36,7 +36,7 @@ public class MatchService {
     private final MatchRepo matchRepo;
     private final MatchRequestRepo reqRepo;
     private final MatchMemberRepo memRepo;
-    private final ChatService chatService;
+    
     private final InAppNotifyService notifyService;
 
     // ---------- 기존: 요청/승인/거절/취소 ----------
@@ -105,9 +105,6 @@ public class MatchService {
             memRepo.save(MatchMember.rider(locked, rider, r.getSeats()));
             r.approve();
 
-            // 채팅방 오픈
-            chatService.openDirectRoom(locked.getId(), locked.getDriver().getId(), rider.getId());
-
             // 인앱 알림: 양측에 승인 알림
             notifyService.toUser(
                     rider.getEmail(),
@@ -160,9 +157,6 @@ public class MatchService {
             }
 
             r.approve();
-
-            // 채팅방 오픈
-            chatService.openDirectRoom(locked.getId(), driver.getId(), receiver.getId());
 
             // 인앱 알림: 양측에 승인 알림
             notifyService.toUser(
