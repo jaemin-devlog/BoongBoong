@@ -39,8 +39,6 @@
 | 금전 거래 차단 | 요금/송금/정산 UI 불가, 금전 관련 키워드 자동 필터링 |
 | 보증 포인트 제도 | 매칭 시 포인트 잠금 → 완료 시 반환, 노쇼·악성 취소 시 차감 |
 | 신뢰 점수 & 레벨 | 매너 점수 기반 가감, 프로필에 레벨 배지 및 매너온도 표시 |
-| 매칭 후 전용 채팅 | 매칭 확정 시 그룹 채팅방 생성, 기본 안내 메시지 제공 |
-| 채팅 필터링 | 금전/욕설/외부 연락처 필터링 & 자동 마스킹 |
 | 리뷰 및 신고 | 종료 후 48시간 이내 리뷰 가능, 칭찬 태그 중심 / 단계별 제재 |
 | 관리자 감사 로그 | 신고 처리, 제재 이력, 채팅 로그 등 일정 기간 보존 |
 | UI/UX | 동행 모집 피드, 필터링 검색, 레벨·차량 정보 표시, PWA & 푸시 알림 |
@@ -56,7 +54,6 @@
 | Database | MySQL 8.x, Spring Data JPA, QueryDSL |
 | Caching & Session | Redis (OTP 캐시, Pub/Sub) |
 | Storage & Security | AWS KMS(암호화) |
-| Real-time Chat | Spring WebSocket, STOMP, SockJS, Redis Pub/Sub |
 | Email & External API | Spring Mail(학교 메일 OTP), 운전면허 진위확인 API |
 | DevOps | Docker, GitHub Actions(CI/CD), AWS EC2, Nginx(HTTPS/리버스 프록시) |
 
