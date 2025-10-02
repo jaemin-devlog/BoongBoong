@@ -70,10 +70,13 @@ public class SecurityConfig {
                                 "/api/users/nickname/exists",
                                 "/api/auth/password/reset-code",
                                 "/api/auth/password/verify-code",
-                                "/api/auth/password/reset"
+                                "/api/auth/password/reset",
+                                "/test-ws.html"           // 로컬 테스트 페이지 허용
                         ).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/me").authenticated()
+                        // WebSocket 핸드셰이크 및 SockJS 리소스는 로그인 세션으로 접근(익명 불가)
+                        .requestMatchers("/ws/**").authenticated()
                         .anyRequest().authenticated())
                 .httpBasic(b -> b.disable())
                 .formLogin(f -> f.disable());
