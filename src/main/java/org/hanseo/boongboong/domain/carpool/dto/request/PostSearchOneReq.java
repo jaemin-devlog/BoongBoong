@@ -4,6 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.hanseo.boongboong.domain.carpool.type.Dir;
 
+import org.hanseo.boongboong.domain.carpool.type.PostRole;
+
 import java.time.LocalDate;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class PostSearchOneReq {
@@ -13,6 +15,8 @@ public class PostSearchOneReq {
     private Dir dir;               // FROM | TO | ALL (기본 ALL)
 
     private LocalDate date;        // 지정 날짜(=) 필터. null이면 today부터(>=)
+
+    private PostRole type;         // DRIVER | RIDER | null(ALL)
 
     private Integer page;          // 기본 0
     private Integer size;          // 기본 20
