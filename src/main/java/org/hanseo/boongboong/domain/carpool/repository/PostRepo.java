@@ -1,6 +1,7 @@
 package org.hanseo.boongboong.domain.carpool.repository;
 
 import org.hanseo.boongboong.domain.carpool.entity.Post;
+import org.hanseo.boongboong.domain.carpool.type.PostRole;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,34 +21,40 @@ public interface PostRepo extends JpaRepository<Post, Long> {
     @Query("""
            select p
              from Post p
-            where p.date >= :fromDate
+            where (:date is null or p.date = :date)
               and p.route.originKey like :keyLike
+              and (:type is null or p.type = :type)
          order by p.date asc, p.time asc
            """)
     Page<Post> findAllByOriginKeyLike(@Param("keyLike") String keyLike,
-                                      @Param("fromDate") LocalDate fromDate,
+                                      @Param("date") LocalDate date,
+                                      @Param("type") PostRole type,
                                       Pageable pageable);
 
     @Query("""
            select p
              from Post p
-            where p.date >= :fromDate
+            where (:date is null or p.date = :date)
               and p.route.destKey like :keyLike
+              and (:type is null or p.type = :type)
          order by p.date asc, p.time asc
            """)
     Page<Post> findAllByDestKeyLike(@Param("keyLike") String keyLike,
-                                    @Param("fromDate") LocalDate fromDate,
+                                    @Param("date") LocalDate date,
+                                    @Param("type") PostRole type,
                                     Pageable pageable);
 
     @Query("""
            select p
              from Post p
-            where p.date >= :fromDate
+            where (:date is null or p.date = :date)
               and (p.route.originKey like :keyLike or p.route.destKey like :keyLike)
+              and (:type is null or p.type = :type)
          order by p.date asc, p.time asc
            """)
     Page<Post> findAllByPlaceKeyLike(@Param("keyLike") String keyLike,
-                                     @Param("fromDate") LocalDate fromDate,
+                                     @Param("date") LocalDate date,
+                                     @Param("type") PostRole type,
                                      Pageable pageable);
 
     // ===== MyPage용 =====
@@ -74,6 +81,18 @@ public interface PostRepo extends JpaRepository<Post, Long> {
          order by p.date asc, p.time asc
            """)
     List<Post> findAllUpcomingByAuthor(@Param("userId") Long userId,
-                                       @Param("today") LocalDate today,
-                                       @Param("now") LocalTime now);
-}
+                                                                               @Param("today") LocalDate today,
+                                                                               @Param("now") LocalTime now);
+                                       
+                                           /** '완료된' 카풀 전체 리스트 */
+                                           @Query("""
+                                                  select p
+                                                    from Post p
+                                                   where p.user.id = :userId
+                                                     and (p.date < :today or (p.date = :today and p.time < :now))
+                                                order by p.date desc, p.time desc
+                                                  """)
+                                           List<Post> findAllCompletedByAuthor(@Param("userId") Long userId,
+                                                                               @Param("today") LocalDate today,
+                                                                               @Param("now") LocalTime now);
+                                       }
