@@ -12,9 +12,13 @@ import java.time.LocalTime;
  */
 public record CompletedCarpoolRes(
         Long postId,        // 게시글 ID
-        PostRole myRole,    // 해당 카풀에서 나의 역할 (운전자/탑승자)
+        PostRole myRole,    // 해당 카풀에서 나의 역할 (운전자/탑- 탑승자)
         String origin,      // 출발지
         String destination, // 목적지
         LocalDate date,     // 카풀 날짜
-        LocalTime time      // 카풀 시간
+        LocalTime time,      // 카풀 시간
+        String profileImageUrl,
+        String nickname,
+        String memo,
+        Integer trustPoint
 ) { }

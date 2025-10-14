@@ -14,5 +14,9 @@ public record OngoingCarpoolRes(
         String origin,      // 출발지
         String destination, // 목적지
         LocalDate date,     // 카풀 날짜
-        LocalTime time      // 카풀 시간
+        LocalTime time,      // 카풀 시간
+        String profileImageUrl,
+        String nickname,
+        String memo,
+        Integer trustPoint
 ) { }
