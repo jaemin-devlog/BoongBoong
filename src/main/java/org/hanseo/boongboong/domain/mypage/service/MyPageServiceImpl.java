@@ -142,6 +142,18 @@ public class MyPageServiceImpl implements MyPageService {
                 .toList();
     }
 
+    /** 완료 전체 리스트 */
+    @Override
+    public List<CompletedCarpoolRes> completedList(String userEmail) {
+        User user = findUser(userEmail);
+        LocalDate today = LocalDate.now();
+        LocalTime now = LocalTime.now();
+        return postRepo.findAllCompletedByAuthor(user.getId(), today, now)
+                .stream()
+                .map(this::toCompletedCarpoolRes)
+                .toList();
+    }
+
     // ===== 헬퍼 =====
     private User findUser(String email) {
         return userRepository.findByEmail(email) // 이메일로 단건 조회
@@ -149,18 +161,40 @@ public class MyPageServiceImpl implements MyPageService {
     }
 
     private OngoingCarpoolRes toOngoingRes(Post p) {
+        User author = p.getUser();
         return new OngoingCarpoolRes(
                 p.getId(),                 // 게시글 ID
                 p.getType(),               // DRIVER/RIDER
                 p.getRoute().getFrom(),    // 출발
                 p.getRoute().getTo(),      // 도착
                 p.getDate(),               // 날짜
-                p.getTime()                // 시간
+                p.getTime(),               // 시간
+                author.getProfileImg(),
+                author.getNickname(),
+                p.getMemo(),
+                author.getTrustScore()
+        );
+    }
+
+    private CompletedCarpoolRes toCompletedCarpoolRes(Post p) {
+        User author = p.getUser();
+        return new CompletedCarpoolRes(
+                p.getId(),
+                p.getType(),
+                p.getRoute().getFrom(),
+                p.getRoute().getTo(),
+                p.getDate(),
+                p.getTime(),
+                author.getProfileImg(),
+                author.getNickname(),
+                p.getMemo(),
+                author.getTrustScore()
         );
     }
 
     private MyPostRes toMyPostRes(Post p) {
         PostStatus status = calcStatusByNow(p.getDate(), p.getTime()); // 임시 상태 계산
+        User author = p.getUser();
         return new MyPostRes(
                 p.getId(),
                 p.getType(),
@@ -169,7 +203,11 @@ public class MyPageServiceImpl implements MyPageService {
                 p.getRoute().getTo(),
                 p.getDate(),
                 p.getTime(),
-                p.getSeats() != null ? p.getSeats() : 0 // null 보호
+                p.getSeats() != null ? p.getSeats() : 0, // null 보호
+                author.getProfileImg(),
+                author.getNickname(),
+                p.getMemo(),
+                author.getTrustScore()
         );
     }
 

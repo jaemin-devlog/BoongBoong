@@ -13,6 +13,8 @@ import org.hanseo.boongboong.domain.carpool.dto.response.PostCreateRes;
 import org.hanseo.boongboong.domain.carpool.dto.response.PostRes;
 import org.hanseo.boongboong.domain.carpool.dto.response.PostSearchRes;
 import org.hanseo.boongboong.domain.carpool.service.PostService;
+import org.hanseo.boongboong.domain.carpool.dto.response.PostDetailRes;
+import org.hanseo.boongboong.domain.carpool.service.PostQueryService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 public class PostController {
 
     private final PostService postService; // 서비스 의존
+    private final PostQueryService postQueryService;
 
     /** C: 생성 */
     @PostMapping
@@ -38,10 +41,10 @@ public class PostController {
         return postService.create(email, req); // 생성 위임
     }
 
-    /** R: 단건 조회 */
+    /** R: 단건 상세 조회 */
     @GetMapping("/{id}")
-    public PostRes get(@PathVariable Long id) { // 경로 변수로 ID
-        return postService.get(id);             // 조회 위임
+    public PostDetailRes get(@PathVariable Long id) { // 경로 변수로 ID
+        return postQueryService.getPostDetails(id);
     }
 
     /** R: 목록(페이지) */

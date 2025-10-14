@@ -18,4 +18,5 @@ public interface MyPageService {
     ProfileCardRes upsertVehicle(String userEmail, String number, String imageUrl); // 차량 업서트
     void deleteVehicle(String userEmail); // 차량 삭제
     List<OngoingCarpoolRes> upcomingList(String userEmail); // 다가올 전체 리스트
+    List<CompletedCarpoolRes> completedList(String userEmail); // 완료된 전체 리스트
 }
