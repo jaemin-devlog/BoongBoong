@@ -57,7 +57,7 @@ out/
 .vscode/
 
 ### Spring Boot Profiles ###
-application-*.yml
+application-dev.yml
 application-*.properties
 
 ### Env files ###
