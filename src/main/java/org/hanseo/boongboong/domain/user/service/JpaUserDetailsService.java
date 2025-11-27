@@ -27,7 +27,7 @@ public class JpaUserDetailsService implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(
                 u.getEmail(),
                 u.getPassword(),
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + u.getRole().name()))
+                Collections.singletonList(new SimpleGrantedAuthority(u.getRole().asGrantedAuthority()))
         );
     }
 }

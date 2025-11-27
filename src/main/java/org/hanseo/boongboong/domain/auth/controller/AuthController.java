@@ -4,7 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.hanseo.boongboong.domain.auth.dto.request.LoginRequest;
-import org.hanseo.boongboong.domain.auth.dto.request.LoginResponse;
+import org.hanseo.boongboong.domain.auth.dto.LoginResponse;
 import org.hanseo.boongboong.domain.auth.dto.request.ResetPasswordRequest;
 import org.hanseo.boongboong.domain.auth.service.AuthService;
 import org.hanseo.boongboong.domain.user.dto.request.EmailSendRequest;
@@ -49,22 +49,27 @@ public class AuthController {
     }
     /** 비밀번호 재설정 코드 발송 */
     @PostMapping("/password/reset-code")
-    public ResponseEntity<MessageResponse> sendResetCode(@RequestBody EmailSendRequest req) {
+    public ResponseEntity<MessageResponse> sendResetCode(@RequestBody @jakarta.validation.Valid EmailSendRequest req) {
         authService.requestPasswordReset(req);
         return ResponseEntity.ok(new MessageResponse("RESET_CODE_SENT"));
     }
 
     /** 비밀번호 재설정 코드 검증 */
     @PostMapping("/password/verify-code")
-    public ResponseEntity<MessageResponse> verifyResetCode(@RequestBody EmailVerifyRequest req) {
+    public ResponseEntity<MessageResponse> verifyResetCode(@RequestBody @jakarta.validation.Valid EmailVerifyRequest req) {
         boolean ok = authService.verifyPasswordResetCode(req);
         return ResponseEntity.ok(new MessageResponse(ok ? "CODE_VERIFIED" : "CODE_INVALID"));
     }
 
     /** 비밀번호 재설정 실행 */
     @PostMapping("/password/reset")
-    public ResponseEntity<MessageResponse> resetPassword(@RequestBody ResetPasswordRequest req) {
+    public ResponseEntity<MessageResponse> resetPassword(@RequestBody @jakarta.validation.Valid ResetPasswordRequest req,
+                                                         HttpServletRequest request) {
         authService.resetPassword(req);
+        // 현재 세션 무효화 및 컨텍스트 클리어 (전역 세션 종료는 Spring Session/Redis 권장)
+        HttpSession session = request.getSession(false);
+        if (session != null) session.invalidate();
+        org.springframework.security.core.context.SecurityContextHolder.clearContext();
         return ResponseEntity.ok(new MessageResponse("PASSWORD_RESET_DONE"));
     }
 

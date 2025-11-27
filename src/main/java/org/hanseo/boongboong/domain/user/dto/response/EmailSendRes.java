@@ -6,7 +6,7 @@ import lombok.Getter;
 /**
  * 이메일 인증코드 발송 요청에 대한 응답 DTO.
  * - sent: 발송 성공 여부
- * - cooldownSeconds: 재요청까지 대기 시간(30초)
+ * - cooldownSeconds: 재요청까지 대기 시간(60초)
  * - ttlSeconds: 인증코드 유효기간(300초(5분))
  * - message: 사용자 안내 메시지(가이드/실패 사유 등)
  */

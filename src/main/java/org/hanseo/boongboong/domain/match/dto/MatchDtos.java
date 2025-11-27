@@ -26,13 +26,15 @@ public class MatchDtos {
             Long matchId,
             String date,
             String time,
-            String from,         // match.fromKey
-            String to,           // match.toKey
+            String from,         // match.fromKey (normalized)
+            String to,           // match.toKey (normalized)
             String status,       // OPEN | LOCKED | COMPLETED | CANCELLED
             String myRole,       // DRIVER | RIDER
-            int mySeats,         // 내가 점유한 좌석(드라이버는 0)
+            int mySeats,         // my reserved/owned seats (driver=0)
             int totalSeats,
-            int bookedSeats
+            int bookedSeats,
+            String fromName,     // human-friendly origin (optional)
+            String toName        // human-friendly destination (optional)
     ) {}
 
     public record MemberRes(
@@ -41,7 +43,8 @@ public class MatchDtos {
             String nick,
             String role,         // DRIVER | RIDER
             int seats,
-            String attend        // UNKNOWN | ATTENDED | NO_SHOW | CANCELLED
+            String attend,       // UNKNOWN | ATTENDED | NO_SHOW | CANCELLED
+            String profileImageUrl // profile image (Data URL or URL)
     ) {}
 
     public record CountersRes(
@@ -49,3 +52,4 @@ public class MatchDtos {
             long sentPending
     ) {}
 }
+

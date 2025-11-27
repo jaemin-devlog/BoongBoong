@@ -45,6 +45,10 @@ public class Match extends BaseEntity {
     @Column(nullable = false, length = 80) private String fromKey;
     @Column(nullable = false, length = 80) private String toKey;
 
+    // Human-readable names captured at creation time for UI
+    @Column(length = 80) private String fromName;
+    @Column(length = 80) private String toName;
+
     @Column(nullable = false) private int totalSeats;
     @Column(nullable = false) private int bookedSeats;
 
@@ -62,6 +66,8 @@ public class Match extends BaseEntity {
                 .time(p.getTime())
                 .fromKey(fromKey)
                 .toKey(toKey)
+                .fromName(p.getRoute().getFrom())
+                .toName(p.getRoute().getTo())
                 .totalSeats(p.getSeats())
                 .bookedSeats(0)
                 .status(MatchStatus.OPEN)

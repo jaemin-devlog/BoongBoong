@@ -4,7 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.hanseo.boongboong.domain.auth.dto.request.LoginRequest;
-import org.hanseo.boongboong.domain.auth.dto.request.LoginResponse;
+import org.hanseo.boongboong.domain.auth.dto.LoginResponse;
 import org.hanseo.boongboong.domain.auth.dto.request.ResetPasswordRequest;
 import org.hanseo.boongboong.domain.user.dto.request.EmailSendRequest;
 import org.hanseo.boongboong.domain.user.dto.request.EmailVerifyRequest;
@@ -53,26 +53,22 @@ public class AuthService {
         return emailService.verifyPasswordResetCode(req.email(), req.code());
     }
 
-    /**
-     * 실제 비밀번호 재설정
-     */
+    /** 실제 비밀번호 재설정 */
     @Transactional
     public void resetPassword(ResetPasswordRequest req) {
         String email = req.email();
-        if (!emailService.isPasswordResetVerified(email)) {
+        String code = req.resetCode();
+        if (code != null && !code.isBlank()) {
+            emailService.verifyPasswordResetCode(email, code);
+        } else if (!emailService.isPasswordResetVerified(email)) {
             throw new BusinessException(ErrorCode.UNAUTHORIZED);
         }
-        userService.resetPassword(email, req.newPassword()); // 암호화 저장
-        emailService.clearPasswordResetFlag(email);       // 플래그 정리
+        userService.resetPassword(email, req.newPassword());
+        emailService.clearPasswordResetFlag(email);
     }
 
     /**
      * 로그인 처리
-     * 1) 인증 (실패 시 AUTHENTICATION_FAILED로 변환)
-     * 2) SecurityContext 생성 및 설정
-     * 3) 세션 생성 + 세션고정 보호(changeSessionId)
-     * 4) 세션에 SecurityContext 저장(핵심)
-     * 5) 응답 DTO 반환
      */
     @Transactional
     public LoginResponse login(LoginRequest req, HttpServletRequest httpReq) {
@@ -82,7 +78,6 @@ public class AuthService {
                     new UsernamePasswordAuthenticationToken(req.username(), req.password())
             );
         } catch (org.springframework.security.core.AuthenticationException e) {
-            // UserService와 동일한 패턴: 도메인 예외로 변환
             throw new BusinessException(ErrorCode.AUTHENTICATION_FAILED);
         }
 
@@ -91,7 +86,7 @@ public class AuthService {
         SecurityContextHolder.setContext(context);
 
         HttpSession session = httpReq.getSession(true);
-        httpReq.changeSessionId(); // 세션 고정 공격 방지
+        httpReq.changeSessionId();
         session.setAttribute(
                 HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
                 context
@@ -105,12 +100,10 @@ public class AuthService {
     }
 
     // -----------------------------------------------------
-    // 내부 공통 매퍼 (이메일만 사용)
+    // 내부 공통 매퍼
     // -----------------------------------------------------
     private LoginResponse toLoginResponse(Authentication authentication) {
-        String principal = authentication.getName(); // 우리 시스템에서는 이메일을 로그인 식별자로 사용
-
-        // 이메일로만 조회
+        String principal = authentication.getName();
         User user = userRepository.findByEmail(principal)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
@@ -118,7 +111,8 @@ public class AuthService {
                 user.getId(),
                 user.getEmail(),
                 user.getNickname(),
-                user.getRole().name()
+                user.getRole().getAuthority()
         );
     }
 }
+

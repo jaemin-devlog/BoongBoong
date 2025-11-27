@@ -13,7 +13,16 @@ import org.hanseo.boongboong.global.entity.BaseEntity;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name="users")
+@Table(
+        name = "users",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_users_email", columnNames = "email"),
+                @UniqueConstraint(name = "uk_users_nickname", columnNames = "nickname")
+        },
+        indexes = {
+                @Index(name = "idx_users_email", columnList = "email")
+        }
+)
 public class User extends BaseEntity {
 
     @Id
@@ -34,6 +43,12 @@ public class User extends BaseEntity {
 
     @Column(nullable = false)
     private int age; // 나이
+
+    @Column(name = "intro", columnDefinition = "TEXT")
+    private String intro;
+
+    @Column(name = "open_chat_url")
+    private String openChatUrl;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -86,5 +101,14 @@ public class User extends BaseEntity {
         this.avatarLetter = letter;
         this.avatarColor = color;
         this.profileImg = profileImgDataUrlOrUrl;
+    }
+
+    /** 프로필 기본 정보 변경 (닉네임 제외) */
+    public void updateProfileBasics(String name, Integer age, String profileImg, String intro, String openChatUrl) {
+        if (name != null) this.name = name;
+        if (age != null) this.age = age;
+        if (profileImg != null) this.profileImg = profileImg;
+        if (intro != null) this.intro = intro;
+        if (openChatUrl != null) this.openChatUrl = openChatUrl;
     }
 }

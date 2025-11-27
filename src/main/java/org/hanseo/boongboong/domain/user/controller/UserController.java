@@ -48,7 +48,7 @@ public class UserController {
         emailService.sendVerificationEmail(requestDto.email()); // 메일 발송
         EmailSendRes res = EmailSendRes.builder()
                 .sent(true)
-                .cooldownSeconds(30)  // 재요청 쿨다운(초)
+                .cooldownSeconds(60)  // 재요청 쿨다운(초) - 서비스의 1분 쿨다운과 일치
                 .ttlSeconds(300)      // 코드 유효기간(초)
                 .message("인증 코드를 전송했습니다.")
                 .build();

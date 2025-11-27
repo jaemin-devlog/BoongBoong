@@ -1,6 +1,5 @@
 // domain/auth/dto/LoginResponse.java
-package org.hanseo.boongboong.domain.auth.dto.request;
-
+package org.hanseo.boongboong.domain.auth.dto;
 
 public record LoginResponse(
         Long id,          // 사용자 ID
@@ -8,3 +7,4 @@ public record LoginResponse(
         String nickname,  // 사용자 닉네임
         String role       // 사용자 권한
 ) {}
+

@@ -19,8 +19,8 @@ import org.hanseo.boongboong.domain.user.entity.User;
 import org.hanseo.boongboong.domain.user.repository.UserRepository;
 import org.hanseo.boongboong.global.exception.BusinessException;
 import org.hanseo.boongboong.global.exception.ErrorCode;
-import org.hanseo.boongboong.notify.InAppNotifyService;
-import org.hanseo.boongboong.notify.NotificationType;
+import org.hanseo.boongboong.domain.notify.InAppNotifyService;
+import org.hanseo.boongboong.domain.notify.NotificationType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -139,6 +139,8 @@ public class MatchService {
                     .time(post.getTime())
                     .fromKey(post.getRoute().getOriginKey())
                     .toKey(post.getRoute().getDestKey())
+                    .fromName(post.getRoute().getFrom())
+                    .toName(post.getRoute().getTo())
                     .totalSeats(r.getSeats())
                     .bookedSeats(0)
                     .status(MatchStatus.OPEN)
@@ -288,7 +290,9 @@ public class MatchService {
                 mm.getRole().name(),
                 mm.getSeats(),
                 m.getTotalSeats(),
-                m.getBookedSeats()
+                m.getBookedSeats(),
+                m.getFromName(),
+                m.getToName()
         );
     }
 
@@ -299,7 +303,8 @@ public class MatchService {
                 mm.getUser().getNickname(),
                 mm.getRole().name(),
                 mm.getSeats(),
-                mm.getAttend().name()
+                mm.getAttend().name(),
+                mm.getUser().getProfileImg()
         );
     }
 }

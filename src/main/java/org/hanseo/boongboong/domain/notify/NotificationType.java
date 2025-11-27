@@ -1,4 +1,4 @@
-package org.hanseo.boongboong.notify;
+package org.hanseo.boongboong.domain.notify;
 
 // src/main/java/.../notify/NotificationType.java
 public enum NotificationType {

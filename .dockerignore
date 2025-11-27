@@ -1,0 +1,24 @@
+# Gradle
+.gradle/
+build/
+out/
+
+# IDE
+.idea/
+*.iml
+
+# Git
+.git/
+.gitignore
+
+# OS/files
+*.log
+*.tmp
+*.swp
+
+# Node (if present in repo)
+node_modules/
+
+# Env files (pass via --env-file or -e)
+.env
+

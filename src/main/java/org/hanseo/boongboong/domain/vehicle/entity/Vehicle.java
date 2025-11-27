@@ -8,11 +8,6 @@ import lombok.NoArgsConstructor;
 import org.hanseo.boongboong.domain.user.entity.User;
 import org.hanseo.boongboong.global.entity.BaseEntity;
 
-/**
- * 차량 엔티티.
- * - 사용자 1:1 차량 등록(번호/이미지 URL) 정보 보관
- * - owner_id 유니크 보장으로 사용자당 1대만 매핑
- */
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
@@ -21,22 +16,38 @@ public class Vehicle extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // PK
+    private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
-    private User owner; // 소유 사용자(1:1)
+    private User owner;
 
     @Column(name = "vehicle_number", nullable = false, unique = true)
-    private String number; // 차량 번호(전국 유일 가정)
+    private String number;
 
     @Column(name = "vehicle_image_url")
-    private String imageUrl; // 차량 이미지 URL
+    private String imageUrl;
+
+    @Column(name = "seats")
+    private Integer seats;
+
+    @Column(name = "color", length = 30)
+    private String color;
 
     @Builder
-    public Vehicle(User owner, String number, String imageUrl) {
-        this.owner = owner;       // 소유자 설정
-        this.number = number;     // 차량번호 설정
-        this.imageUrl = imageUrl; // 이미지 URL 설정
+    public Vehicle(User owner, String number, String imageUrl, Integer seats, String color) {
+        this.owner = owner;
+        this.number = number;
+        this.imageUrl = imageUrl;
+        this.seats = seats;
+        this.color = color;
+    }
+
+    public void update(String number, String imageUrl, Integer seats, String color) {
+        if (number != null) this.number = number;
+        if (imageUrl != null) this.imageUrl = imageUrl;
+        if (seats != null) this.seats = seats;
+        if (color != null) this.color = color;
     }
 }
+
