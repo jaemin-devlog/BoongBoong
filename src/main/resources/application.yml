@@ -1,3 +1,14 @@
 spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE }
+
+# Enforce HTTPS-safe session cookies across all profiles
+server:
+  servlet:
+    session:
+      cookie:
+        same-site: None
+        secure: true
+        http-only: true
+  # If running behind a proxy/LB that sets X-Forwarded-Proto, this helps Spring treat requests as HTTPS
+  forward-headers-strategy: framework

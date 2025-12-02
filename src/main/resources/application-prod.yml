@@ -33,3 +33,12 @@ app:
     domains:
       allowed:
         - office.hanseo.ac.kr
+
+# Cross-site session cookie settings for frontend on a different domain
+server:
+  servlet:
+    session:
+      cookie:
+        same-site: None   # allow cross-site XHR with credentials
+        secure: true      # required by browsers when SameSite=None; ensure HTTPS
+        http-only: true
