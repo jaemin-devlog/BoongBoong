@@ -1,5 +1,4 @@
-# syntax=docker/dockerfile:1
-
+# Note: Avoid BuildKit-only syntax directive for broader compatibility
 # Build stage
 FROM eclipse-temurin:21-jdk AS build
 WORKDIR /app
@@ -32,4 +31,3 @@ ENV JAVA_OPTS="-Djava.security.egd=file:/dev/./urandom"
 
 # Start the application
 ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar /app/app.jar"]
-
