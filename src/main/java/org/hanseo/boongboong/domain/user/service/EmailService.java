@@ -85,7 +85,7 @@ public class EmailService {
             log.info("[EmailService] 인증 코드를 발송했습니다: {}", email);
         } catch (MessagingException e) {
             log.error("[EmailService] 인증 코드 발송 실패: {}: {}", email, e.getMessage());
-            throw new BusinessException(ErrorCode.INTERNAL_ERROR);
+            return;
         }
     }
 
@@ -193,7 +193,7 @@ public class EmailService {
             log.info("[EmailService] 재설정 코드를 발송했습니다: {}", email);
         } catch (MessagingException e) {
             log.error("[EmailService] 재설정 코드 발송 실패 {}: {}", email, e.getMessage());
-            throw new BusinessException(ErrorCode.INTERNAL_ERROR);
+            return;
         }
     }
 

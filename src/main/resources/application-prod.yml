@@ -54,5 +54,7 @@ app:
     domains:
       allowed:
         - office.hanseo.ac.kr
+  signup:
+    require-email-verification: false
 
  

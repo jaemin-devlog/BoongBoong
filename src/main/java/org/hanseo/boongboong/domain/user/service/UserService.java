@@ -9,6 +9,7 @@ import org.hanseo.boongboong.domain.user.repository.UserRepository;
 import org.hanseo.boongboong.global.exception.BusinessException;
 import org.hanseo.boongboong.global.exception.ErrorCode;
 import org.hanseo.boongboong.global.util.EmailDomainValidator;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,9 @@ public class UserService {
     // 가입/닉네임 변경 시 아바타 확정용 (닉네임 기반 이니셜/색상, 대비 자동 전환, SVG Data URL)
     private final AvatarGenerator avatarGenerator;
 
+    @Value("${app.signup.require-email-verification:true}")
+    private boolean requireEmailVerification;
+
     private static final int DEFAULT_TRUST_SCORE = 50;   // 기본 신뢰 점수
 
     /**
@@ -48,8 +52,8 @@ public class UserService {
         if (!emailDomainValidator.isAllowed(dto.email())) {
             throw new BusinessException(ErrorCode.INVALID_EMAIL_DOMAIN);
         }
-        // 1-2) 이메일 인증 완료 여부 확인
-        if (!emailService.isVerified(dto.email())) {
+        // 1-2) 이메일 인증 완료 여부 확인 (옵션)
+        if (requireEmailVerification && !emailService.isVerified(dto.email())) {
             throw new BusinessException(ErrorCode.EMAIL_NOT_VERIFIED);
         }
         // 1-3) 이메일 중복 검사
