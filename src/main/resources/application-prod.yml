@@ -33,6 +33,10 @@ spring:
           auth: true
           starttls:
             enable: true
+          # Fail fast to avoid long request blocks
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
 
 app:
   email:

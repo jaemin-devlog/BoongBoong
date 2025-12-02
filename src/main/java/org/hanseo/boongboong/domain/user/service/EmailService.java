@@ -43,6 +43,7 @@ public class EmailService {
     /**
      * 인증 메일 발송
      */
+    @org.springframework.scheduling.annotation.Async("mailTaskExecutor")
     @Transactional
     public void sendVerificationEmail(String email) {
         // 허용된 이메일 도메인인지 확인
@@ -161,6 +162,7 @@ public class EmailService {
     /**
      * 비밀번호 재설정 코드 발송
      */
+    @org.springframework.scheduling.annotation.Async("mailTaskExecutor")
     @Transactional
     public void sendPasswordResetEmail(String email) {
         // 1분 내 재발송 제한
