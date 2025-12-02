@@ -6,8 +6,19 @@ server:
         same-site: None   # allow cross-site XHR with credentials
         secure: true      # required by browsers when SameSite=None; ensure HTTPS
         http-only: true
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain,application/javascript,text/css
+    min-response-size: 1024
+  tomcat:
+    threads:
+      max: 50
+    accept-count: 100
 
 spring:
+  threads:
+    virtual:
+      enabled: true
   datasource:
     url: jdbc:mysql://${MYSQLHOST}:${MYSQLPORT}/${MYSQLDATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull
     username: ${MYSQLUSER}
