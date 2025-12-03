@@ -34,25 +34,21 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
 
   mail:
-    host: smtp.gmail.com
+    host: smtp-relay.brevo.com
     port: 587
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    username: ${BREVO_SMTP_USER}
+    password: ${BREVO_SMTP_PASSWORD}
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
-          # Increase timeouts for low CPU environments (Render free tier)
-          connectiontimeout: 60000
-          timeout: 60000
-          writetimeout: 60000
 
 app:
   mail:
-    from: ${MAIL_USERNAME}
-    provider: resend
+    from: jjm10859@gmail.com
+    provider: smtp
   email:
     domains:
       allowed:
