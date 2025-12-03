@@ -52,6 +52,7 @@ spring:
 app:
   mail:
     from: ${MAIL_USERNAME}
+    provider: resend
   email:
     domains:
       allowed:

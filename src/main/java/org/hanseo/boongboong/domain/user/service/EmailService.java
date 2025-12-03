@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hanseo.boongboong.global.exception.BusinessException;
 import org.hanseo.boongboong.global.exception.ErrorCode;
+import org.hanseo.boongboong.global.mail.MailClient;
 import org.hanseo.boongboong.global.mail.MailTemplateRenderer;
 import org.hanseo.boongboong.global.util.EmailDomainValidator;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,7 +30,7 @@ public class EmailService {
     @Value("${app.mail.from:}")
     private String from;
 
-    private final JavaMailSender mailSender;                 // 메일 발송 객체
+    private final MailClient mailClient;                 // 메일 발송 객체
     private final MailTemplateRenderer templateRenderer;     // HTML 템플릿 렌더러
     private final EmailDomainValidator emailDomainValidator; // 이메일 도메인 허용 여부 검사
 
@@ -71,27 +72,15 @@ public class EmailService {
         verificationAttempts.put(email, 0); // 실패횟수 초기화
 
         try {
-            // 메일 작성
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            if (from != null && !from.isBlank()) {
-                helper.setFrom(from);
-            }
-
-            helper.setTo(email);
-            helper.setSubject("[붕붕] 이메일 인증코드");
-
             // HTML 템플릿에 코드 삽입
             Map<String, String> tokens = new HashMap<>();
             tokens.put("code", code);
             String htmlContent = templateRenderer.renderVerificationHtml(tokens);
-            helper.setText(htmlContent, true);
 
             // 메일 발송
-            mailSender.send(message);
+            mailClient.sendHtml(email, "[붕붕] 이메일 인증코드", htmlContent);
             log.info("[EmailService] 인증 코드를 발송했습니다: {}", email);
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             log.error("[EmailService] 인증 코드 발송 실패: {}: {}", email, e.getMessage());
             return;
         }
@@ -186,24 +175,13 @@ public class EmailService {
         resetVerifiedEmails.remove(email);
 
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            if (from != null && !from.isBlank()) {
-                helper.setFrom(from);
-            }
-
-            helper.setTo(email);
-            helper.setSubject("[붕붕] 비밀번호 재설정 코드");
-
             Map<String, String> tokens = new HashMap<>();
             tokens.put("code", code);
             String htmlContent = templateRenderer.renderVerificationHtml(tokens);
-            helper.setText(htmlContent, true);
 
-            mailSender.send(message);
+            mailClient.sendHtml(email, "[붕붕] 비밀번호 재설정 코드", htmlContent);
             log.info("[EmailService] 재설정 코드를 발송했습니다: {}", email);
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             log.error("[EmailService] 재설정 코드 발송 실패 {}: {}", email, e.getMessage());
             return;
         }
