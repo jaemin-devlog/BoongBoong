@@ -45,9 +45,9 @@ spring:
           starttls:
             enable: true
           # Increase timeouts for low CPU environments (Render free tier)
-          connectiontimeout: 20000
-          timeout: 20000
-          writetimeout: 20000
+          connectiontimeout: 60000
+          timeout: 60000
+          writetimeout: 60000
 
 app:
   mail:
