@@ -44,12 +44,14 @@ spring:
           auth: true
           starttls:
             enable: true
-          # Fail fast to avoid long request blocks
-          connectiontimeout: 5000
-          timeout: 5000
-          writetimeout: 5000
+          # Increase timeouts for low CPU environments (Render free tier)
+          connectiontimeout: 20000
+          timeout: 20000
+          writetimeout: 20000
 
 app:
+  mail:
+    from: ${MAIL_USERNAME}
   email:
     domains:
       allowed:

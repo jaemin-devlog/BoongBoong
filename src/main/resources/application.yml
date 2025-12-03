@@ -1,9 +1,10 @@
 spring:
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE }
+    active: ${SPRING_PROFILES_ACTIVE}
 
 # Enforce HTTPS-safe session cookies across all profiles
 server:
+  port: 8084
   servlet:
     session:
       cookie:

@@ -6,6 +6,7 @@ import org.hanseo.boongboong.global.exception.BusinessException;
 import org.hanseo.boongboong.global.exception.ErrorCode;
 import org.hanseo.boongboong.global.mail.MailTemplateRenderer;
 import org.hanseo.boongboong.global.util.EmailDomainValidator;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 @Service
 @RequiredArgsConstructor // DI 주입
 public class EmailService {
+
+    @Value("${app.mail.from:}")
+    private String from;
 
     private final JavaMailSender mailSender;                 // 메일 발송 객체
     private final MailTemplateRenderer templateRenderer;     // HTML 템플릿 렌더러
@@ -71,8 +75,12 @@ public class EmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
+            if (from != null && !from.isBlank()) {
+                helper.setFrom(from);
+            }
+
             helper.setTo(email);
-            helper.setSubject("[부엉붕] 이메일 인증코드");
+            helper.setSubject("[붕붕] 이메일 인증코드");
 
             // HTML 템플릿에 코드 삽입
             Map<String, String> tokens = new HashMap<>();
@@ -181,8 +189,12 @@ public class EmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
+            if (from != null && !from.isBlank()) {
+                helper.setFrom(from);
+            }
+
             helper.setTo(email);
-            helper.setSubject("[부엉붕] 비밀번호 재설정 코드");
+            helper.setSubject("[붕붕] 비밀번호 재설정 코드");
 
             Map<String, String> tokens = new HashMap<>();
             tokens.put("code", code);
