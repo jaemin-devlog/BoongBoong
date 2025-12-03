@@ -7,6 +7,10 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.mail.MailException;
+
+@Slf4j
 @RequiredArgsConstructor
 public class SmtpMailClient implements MailClient {
     private final JavaMailSender mailSender;
@@ -24,7 +28,8 @@ public class SmtpMailClient implements MailClient {
             helper.setSubject(subject);
             helper.setText(html, true);
             mailSender.send(message);
-        } catch (MessagingException e) {
+        } catch (MessagingException | MailException e) {
+            log.error("[SmtpMailClient] SMTP send failed", e);
             throw new RuntimeException("SMTP send failed: " + e.getMessage(), e);
         }
     }
