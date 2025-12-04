@@ -35,25 +35,34 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
 
   mail:
-    host: smtp-relay.brevo.com
+    host: smtp.gmail.com
     port: 587
-    username: ${SPRING_MAIL_USERNAME}
-    password: ${SPRING_MAIL_PASSWORD}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
 
 app:
   mail:
-    from: jjm10859@gmail.com
+    from: ${MAIL_USERNAME}
     provider: smtp
   email:
     domains:
       allowed:
         - office.hanseo.ac.kr
+        - gmail.com
+        - naver.com
+        - daum.net
+        - hanmail.net
+        - outlook.com
   signup:
     require-email-verification: false
 
