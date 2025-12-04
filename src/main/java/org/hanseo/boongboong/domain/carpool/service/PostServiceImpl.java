@@ -117,6 +117,7 @@ public class PostServiceImpl implements PostService {
                         .memo(p.getMemo())
                         .dir(null) // 장소 기반 검색이 아니므로 방향 정보는 비워둠
                         .author(AuthorMapper.from(p.getUser()))
+                        .trustScore(p.getUser().getTrustScore())
                         .build()).getContent())
                 .build();
     }

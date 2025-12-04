@@ -18,6 +18,7 @@ public record CompletedCarpoolRes(
         LocalDate date,     // 카풀 날짜
         LocalTime time,      // 카풀 시간
         String profileImageUrl,
+        String name,
         String nickname,
         String memo,
         Integer trustPoint

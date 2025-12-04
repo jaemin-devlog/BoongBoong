@@ -21,6 +21,7 @@ public final class AuthorMapper {
                 .id(u.getId())               // 사용자 ID
                 .nick(u.getNickname())       // 닉네임
                 .profileImg(u.getProfileImg()) // 프로필 이미지 데이터/URL
+                .trustScore(u.getTrustScore()) // 신뢰 점수
                 .build();
     }
 }

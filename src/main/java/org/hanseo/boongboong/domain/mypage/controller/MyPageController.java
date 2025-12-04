@@ -40,6 +40,11 @@ public class MyPageController {
         return ResponseEntity.ok(myPageService.upcomingList(email));
     }
 
+    @GetMapping("/completed/list")
+    public ResponseEntity<List<CompletedCarpoolRes>> completedList(@RequestParam String email) {
+        return ResponseEntity.ok(myPageService.completedList(email));
+    }
+
     @GetMapping("/posts")
     public ResponseEntity<List<MyPostRes>> myPosts(@RequestParam String email) {
         return ResponseEntity.ok(myPageService.myPosts(email));

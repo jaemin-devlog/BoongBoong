@@ -224,6 +224,7 @@ public class MyPageServiceImpl implements MyPageService {
                 p.getTime(),
                 author.getProfileImg(),
                 author.getNickname(),
+                author.getNickname(),
                 p.getMemo(),
                 author.getTrustScore()
         );

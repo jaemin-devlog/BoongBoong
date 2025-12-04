@@ -29,5 +29,6 @@ public class PostSearchRes {
         private String memo;
         private String dir;        // 일반 목록은 null, 검색에서는 요청값(ALL|FROM|TO)
         private AuthorDto author;  // id, nick, profileImg
+        private Integer trustScore; // 작성자 신뢰 점수(목록 노출용)
     }
 }
