@@ -272,6 +272,7 @@ public class MatchService {
                 r.getPost().getId(),
                 r.getPost().getType().name(),
                 new SimpleUser(r.getRequester().getId(), r.getRequester().getNickname()),
+                new SimpleUser(r.getReceiver().getId(), r.getReceiver().getNickname()),
                 r.getSeats(),
                 r.getStatus().name(),
                 r.getCreatedAt() != null ? r.getCreatedAt().toString() : null

@@ -1,5 +1,6 @@
 server:
-  port: 8080
+  # Bind to Render's provided PORT if present (fallback 8080)
+  port: ${PORT:8080}
   servlet:
     session:
       cookie:

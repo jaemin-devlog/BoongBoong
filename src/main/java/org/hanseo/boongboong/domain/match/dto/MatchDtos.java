@@ -17,6 +17,7 @@ public class MatchDtos {
             Long postId,
             String postType,     // DRIVER | RIDER
             SimpleUser requester,
+            SimpleUser receiver, // 게시글 작성자(수신자)
             int seats,
             String status,       // PENDING | APPROVED | ...
             String createdAt
@@ -52,4 +53,3 @@ public class MatchDtos {
             long sentPending
     ) {}
 }
-
