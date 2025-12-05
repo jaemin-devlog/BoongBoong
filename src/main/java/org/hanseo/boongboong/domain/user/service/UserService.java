@@ -166,4 +166,19 @@ public class UserService {
     public boolean isNicknameExists(String nickname) {
         return userRepository.existsByNickname(nickname);
     }
+
+    /**
+     * 오픈채팅 URL 업데이트
+     */
+    @Transactional
+    public void updateOpenChatUrlByEmail(String email, String openChatUrl) {
+        if (openChatUrl == null || openChatUrl.isBlank()) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT);
+        }
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        user.updateProfileBasics(null, null, null, null, openChatUrl);
+        userRepository.save(user);
+        log.info("[UserService] 오픈채팅 URL 업데이트 완료. email={}", email);
+    }
 }

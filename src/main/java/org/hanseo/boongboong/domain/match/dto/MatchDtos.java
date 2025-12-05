@@ -45,7 +45,8 @@ public class MatchDtos {
             String role,         // DRIVER | RIDER
             int seats,
             String attend,       // UNKNOWN | ATTENDED | NO_SHOW | CANCELLED
-            String profileImageUrl // profile image (Data URL or URL)
+            String profileImageUrl, // profile image (Data URL or URL)
+            String openChatUrl      // Kakao OpenChat URL (optional)
     ) {}
 
     public record CountersRes(

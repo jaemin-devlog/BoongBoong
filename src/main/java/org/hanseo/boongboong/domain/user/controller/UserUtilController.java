@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hanseo.boongboong.domain.user.dto.request.UpdateNicknameRequest;
+import org.hanseo.boongboong.domain.user.dto.request.UpdateOpenChatUrlRequest;
 import org.hanseo.boongboong.domain.user.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -57,5 +58,16 @@ public class UserUtilController {
     }
 
     /** 간단 응답 DTO(내부 전용) */
+    @PutMapping("/openchat")
+    public ResponseEntity<Void> updateOpenChatUrl(
+            @AuthenticationPrincipal UserDetails principal,
+            @Valid @RequestBody UpdateOpenChatUrlRequest req
+    ) {
+        String email = principal.getUsername();
+        userService.updateOpenChatUrlByEmail(email, req.openChatUrl());
+        log.info("[UserUtilController] 오픈채팅 URL 업데이트. email={}", email);
+        return ResponseEntity.ok().build();
+    }
+
     private record CheckResponse(boolean exists) {}
 }

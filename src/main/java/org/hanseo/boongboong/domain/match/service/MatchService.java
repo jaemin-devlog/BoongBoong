@@ -305,7 +305,8 @@ public class MatchService {
                 mm.getRole().name(),
                 mm.getSeats(),
                 mm.getAttend().name(),
-                mm.getUser().getProfileImg()
+                mm.getUser().getProfileImg(),
+                mm.getUser().getOpenChatUrl()
         );
     }
 }
