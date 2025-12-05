@@ -49,7 +49,10 @@ public interface MatchMemberRepo extends JpaRepository<MatchMember, Long> {
              from MatchMember mm
              join mm.match m
             where mm.user.email = :email
-              and (m.date < :today or (m.date = :today and m.time < :now))
+              and (
+                    m.status = org.hanseo.boongboong.domain.match.type.MatchStatus.COMPLETED
+                 or (m.date < :today or (m.date = :today and m.time < :now))
+              )
          order by m.date desc, m.time desc
            """)
     List<MatchMember> findAllCompletedByUserEmail(@Param("email") String email,
