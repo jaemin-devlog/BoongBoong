@@ -36,6 +36,19 @@ public interface MatchMemberRepo extends JpaRepository<MatchMember, Long> {
              from MatchMember mm
              join mm.match m
             where mm.user.email = :email
+              and m.date = :today and m.time <= :now
+              and m.status in (org.hanseo.boongboong.domain.match.type.MatchStatus.OPEN, org.hanseo.boongboong.domain.match.type.MatchStatus.LOCKED)
+         order by m.time desc
+           """)
+    List<MatchMember> findAllOngoingByUserEmail(@Param("email") String email,
+                                                @Param("today") java.time.LocalDate today,
+                                                @Param("now") java.time.LocalTime now);
+
+    @Query("""
+           select mm
+             from MatchMember mm
+             join mm.match m
+            where mm.user.email = :email
               and (m.date > :today or (m.date = :today and m.time >= :now))
               and m.status in (org.hanseo.boongboong.domain.match.type.MatchStatus.OPEN, org.hanseo.boongboong.domain.match.type.MatchStatus.LOCKED)
          order by m.date asc, m.time asc
@@ -49,10 +62,8 @@ public interface MatchMemberRepo extends JpaRepository<MatchMember, Long> {
              from MatchMember mm
              join mm.match m
             where mm.user.email = :email
-              and (
-                    m.status = org.hanseo.boongboong.domain.match.type.MatchStatus.COMPLETED
-                 or (m.date < :today or (m.date = :today and m.time < :now))
-              )
+              and (m.date < :today or (m.date = :today and m.time < :now))
+              and m.status <> org.hanseo.boongboong.domain.match.type.MatchStatus.COMPLETED
          order by m.date desc, m.time desc
            """)
     List<MatchMember> findAllCompletedByUserEmail(@Param("email") String email,

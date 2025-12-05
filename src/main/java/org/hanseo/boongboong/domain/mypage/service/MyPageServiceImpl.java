@@ -79,7 +79,7 @@ public class MyPageServiceImpl implements MyPageService {
         User user = findUser(userEmail);
         LocalDate today = LocalDate.now();
         LocalTime now = LocalTime.now();
-        return matchMemberRepo.findAllUpcomingByUserEmail(user.getEmail(), today, now)
+        return matchMemberRepo.findAllOngoingByUserEmail(user.getEmail(), today, now)
                 .stream()
                 .findFirst()
                 .map(this::toOngoingResFromMatch)
