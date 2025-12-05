@@ -24,6 +24,11 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+// match
+import org.hanseo.boongboong.domain.match.entity.Match;
+import org.hanseo.boongboong.domain.match.entity.MatchMember;
+import org.hanseo.boongboong.domain.match.repository.MatchMemberRepo;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -34,6 +39,7 @@ public class MyPageServiceImpl implements MyPageService {
     private final PostRepo postRepo;
     private final DriverLicenseRepository driverLicenseRepository;
     private final UserService userService;
+    private final MatchMemberRepo matchMemberRepo;
 
     @Override
     public MyPageRes getMyPageInfo(String userEmail) {
@@ -69,19 +75,27 @@ public class MyPageServiceImpl implements MyPageService {
 
     @Override
     public OngoingCarpoolRes ongoing(String userEmail) {
-        // not implemented: return null for now
-        return null;
+        // 현재 진행중인 매칭(오늘, 현재시간 이상 포함) 중 가장 가까운 건 반환
+        User user = findUser(userEmail);
+        LocalDate today = LocalDate.now();
+        LocalTime now = LocalTime.now();
+        return matchMemberRepo.findAllUpcomingByUserEmail(user.getEmail(), today, now)
+                .stream()
+                .findFirst()
+                .map(this::toOngoingResFromMatch)
+                .orElse(null);
     }
 
     @Override
     public OngoingCarpoolRes upcoming(String userEmail) {
+        // 가장 가까운 ‘성사된(매칭)’ 카풀 1건 반환
         User user = findUser(userEmail);
         LocalDate today = LocalDate.now();
         LocalTime now = LocalTime.now();
-        return postRepo.findNearestUpcomingByAuthor(user.getId(), today, now)
+        return matchMemberRepo.findAllUpcomingByUserEmail(user.getEmail(), today, now)
                 .stream()
                 .findFirst()
-                .map(this::toOngoingRes)
+                .map(this::toOngoingResFromMatch)
                 .orElse(null);
     }
 
@@ -124,9 +138,9 @@ public class MyPageServiceImpl implements MyPageService {
         User user = findUser(userEmail);
         LocalDate today = LocalDate.now();
         LocalTime now = LocalTime.now();
-        return postRepo.findAllUpcomingByAuthor(user.getId(), today, now)
+        return matchMemberRepo.findAllUpcomingByUserEmail(user.getEmail(), today, now)
                 .stream()
-                .map(this::toOngoingRes)
+                .map(this::toOngoingResFromMatch)
                 .toList();
     }
 
@@ -135,9 +149,9 @@ public class MyPageServiceImpl implements MyPageService {
         User user = findUser(userEmail);
         LocalDate today = LocalDate.now();
         LocalTime now = LocalTime.now();
-        return postRepo.findAllCompletedByAuthor(user.getId(), today, now)
+        return matchMemberRepo.findAllCompletedByUserEmail(user.getEmail(), today, now)
                 .stream()
-                .map(this::toCompletedCarpoolRes)
+                .map(this::toCompletedCarpoolResFromMatch)
                 .toList();
     }
 
@@ -227,6 +241,51 @@ public class MyPageServiceImpl implements MyPageService {
                 author.getNickname(),
                 p.getMemo(),
                 author.getTrustScore()
+        );
+    }
+
+    private OngoingCarpoolRes toOngoingResFromMatch(MatchMember mm) {
+        Match m = mm.getMatch();
+        User driver = m.getDriver();
+        var driverPost = m.getDriverPost();
+        String origin = m.getFromName() != null ? m.getFromName() : m.getFromKey();
+        String dest = m.getToName() != null ? m.getToName() : m.getToKey();
+        String memo = driverPost != null ? driverPost.getMemo() : null;
+        Long postId = driverPost != null ? driverPost.getId() : null;
+        return new OngoingCarpoolRes(
+                postId,
+                mm.getRole(),
+                origin,
+                dest,
+                m.getDate(),
+                m.getTime(),
+                driver.getProfileImg(),
+                driver.getNickname(),
+                memo,
+                driver.getTrustScore()
+        );
+    }
+
+    private CompletedCarpoolRes toCompletedCarpoolResFromMatch(MatchMember mm) {
+        Match m = mm.getMatch();
+        User driver = m.getDriver();
+        var driverPost = m.getDriverPost();
+        String origin = m.getFromName() != null ? m.getFromName() : m.getFromKey();
+        String dest = m.getToName() != null ? m.getToName() : m.getToKey();
+        String memo = driverPost != null ? driverPost.getMemo() : null;
+        Long postId = driverPost != null ? driverPost.getId() : null;
+        return new CompletedCarpoolRes(
+                postId,
+                mm.getRole(),
+                origin,
+                dest,
+                m.getDate(),
+                m.getTime(),
+                driver.getProfileImg(),
+                driver.getNickname(),
+                driver.getNickname(),
+                memo,
+                driver.getTrustScore()
         );
     }
 

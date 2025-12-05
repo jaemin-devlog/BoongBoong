@@ -29,4 +29,30 @@ public interface MatchMemberRepo extends JpaRepository<MatchMember, Long> {
     boolean existsByMatchIdAndUserEmail(Long matchId, String email);
 
     List<MatchMember> findByMatchId(Long matchId);
+
+    // MyPage: upcoming/completed lists by user
+    @Query("""
+           select mm
+             from MatchMember mm
+             join mm.match m
+            where mm.user.email = :email
+              and (m.date > :today or (m.date = :today and m.time >= :now))
+              and m.status in (org.hanseo.boongboong.domain.match.type.MatchStatus.OPEN, org.hanseo.boongboong.domain.match.type.MatchStatus.LOCKED)
+         order by m.date asc, m.time asc
+           """)
+    List<MatchMember> findAllUpcomingByUserEmail(@Param("email") String email,
+                                                 @Param("today") java.time.LocalDate today,
+                                                 @Param("now") java.time.LocalTime now);
+
+    @Query("""
+           select mm
+             from MatchMember mm
+             join mm.match m
+            where mm.user.email = :email
+              and (m.date < :today or (m.date = :today and m.time < :now))
+         order by m.date desc, m.time desc
+           """)
+    List<MatchMember> findAllCompletedByUserEmail(@Param("email") String email,
+                                                  @Param("today") java.time.LocalDate today,
+                                                  @Param("now") java.time.LocalTime now);
 }
