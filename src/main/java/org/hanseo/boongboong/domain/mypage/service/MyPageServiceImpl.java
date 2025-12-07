@@ -214,7 +214,10 @@ public class MyPageServiceImpl implements MyPageService {
     private OngoingCarpoolRes toOngoingRes(Post p) {
         User author = p.getUser();
         return new OngoingCarpoolRes(
+                null, // matchId 없음
+                null, // myMemberId 없음
                 p.getId(),
+                author.getId(),
                 p.getType(),
                 p.getRoute().getFrom(),
                 p.getRoute().getTo(),
@@ -253,7 +256,10 @@ public class MyPageServiceImpl implements MyPageService {
         String memo = driverPost != null ? driverPost.getMemo() : null;
         Long postId = driverPost != null ? driverPost.getId() : null;
         return new OngoingCarpoolRes(
+                m.getId(),
+                mm.getId(),
                 postId,
+                (mm.getRole() == org.hanseo.boongboong.domain.carpool.type.PostRole.RIDER) ? driver.getId() : null,
                 mm.getRole(),
                 origin,
                 dest,
