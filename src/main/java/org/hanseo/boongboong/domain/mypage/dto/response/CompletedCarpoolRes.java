@@ -1,27 +1,21 @@
-package org.hanseo.boongboong.domain.mypage.dto.response;
+ï»¿package org.hanseo.boongboong.domain.mypage.dto.response;
 
 import org.hanseo.boongboong.domain.carpool.type.PostRole;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-/**
- * ë§ˆì´?˜ì´ì§€?ì„œ ?¸ì¶œ?˜ëŠ” "?„ë£Œ??ì¹´í?" ??ê±´ì˜ ?”ì•½ ?‘ë‹µ DTO.
- * - ?¬ìš©ì²? ê³¼ê±° ì¹´í? ?´ì—­(?„ë£Œ ???? ëª©ë¡/?ì„¸ ì¹´ë“œ
- * - ?¬í•¨ ?•ë³´: ê²Œì‹œê¸€ ID, ????• , ì¶œë°œ/?„ì°©ì§€, ? ì§œ, ?œê°„
- */
-public record CompletedCarpoolRes(\r
-        Long matchId,       // ¸ÅÄª ID\r
-        Long postId,        // ê²Œì‹œê¸€ ID
-        PostRole myRole,    // ?´ë‹¹ ì¹´í??ì„œ ?˜ì˜ ??•  (?´ì „???? ?‘ìŠ¹??
-        String origin,      // ì¶œë°œì§€
-        String destination, // ëª©ì ì§€
-        LocalDate date,     // ì¹´í? ? ì§œ
-        LocalTime time,      // ì¹´í? ?œê°„
+public record CompletedCarpoolRes(
+        Long matchId,
+        Long postId,
+        PostRole myRole,
+        String origin,
+        String destination,
+        LocalDate date,
+        LocalTime time,
         String profileImageUrl,
         String name,
         String nickname,
         String memo,
         Integer trustPoint
-) { }
-
+) {}

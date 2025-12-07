@@ -233,6 +233,7 @@ public class MyPageServiceImpl implements MyPageService {
     private CompletedCarpoolRes toCompletedCarpoolRes(Post p) {
         User author = p.getUser();
         return new CompletedCarpoolRes(
+                null,
                 p.getId(),
                 p.getType(),
                 p.getRoute().getFrom(),
@@ -281,6 +282,7 @@ public class MyPageServiceImpl implements MyPageService {
         String memo = driverPost != null ? driverPost.getMemo() : null;
         Long postId = driverPost != null ? driverPost.getId() : null;
         return new CompletedCarpoolRes(
+                m.getId(),
                 postId,
                 mm.getRole(),
                 origin,

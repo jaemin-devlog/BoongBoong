@@ -24,6 +24,11 @@ repositories {
     mavenCentral()
 }
 
+// Ensure Java sources are compiled as UTF-8 to avoid unmappable character errors
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
