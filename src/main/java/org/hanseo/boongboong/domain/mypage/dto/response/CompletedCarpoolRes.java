@@ -1,4 +1,4 @@
-﻿package org.hanseo.boongboong.domain.mypage.dto.response;
+package org.hanseo.boongboong.domain.mypage.dto.response;
 
 import org.hanseo.boongboong.domain.carpool.type.PostRole;
 
@@ -19,3 +19,4 @@ public record CompletedCarpoolRes(
         String memo,
         Integer trustPoint
 ) {}
+
