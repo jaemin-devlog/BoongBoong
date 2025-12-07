@@ -10,7 +10,7 @@ public class MatchDtos {
     public record MatchIdRes(Long matchId) {}
 
     // 목록/요약 응답 DTO들
-    public record SimpleUser(Long id, String nick) {}
+    public record SimpleUser(Long id, String nick, String profileImageUrl) {}
 
     public record MatchReqSummaryRes(
             Long requestId,

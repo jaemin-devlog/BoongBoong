@@ -271,8 +271,8 @@ public class MatchService {
                 r.getId(),
                 r.getPost().getId(),
                 r.getPost().getType().name(),
-                new SimpleUser(r.getRequester().getId(), r.getRequester().getNickname()),
-                new SimpleUser(r.getReceiver().getId(), r.getReceiver().getNickname()),
+                new SimpleUser(r.getRequester().getId(), r.getRequester().getNickname(), r.getRequester().getProfileImg()),
+                new SimpleUser(r.getReceiver().getId(), r.getReceiver().getNickname(), r.getReceiver().getProfileImg()),
                 r.getSeats(),
                 r.getStatus().name(),
                 r.getCreatedAt() != null ? r.getCreatedAt().toString() : null

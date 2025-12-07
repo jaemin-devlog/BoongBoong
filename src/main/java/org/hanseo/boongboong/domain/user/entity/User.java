@@ -103,6 +103,10 @@ public class User extends BaseEntity {
         this.profileImg = profileImgDataUrlOrUrl;
     }
 
+    public void setTrustScore(int trustScore) {
+        this.trustScore = trustScore;
+    }
+
     /** 프로필 기본 정보 변경 (닉네임 제외) */
     public void updateProfileBasics(String name, Integer age, String profileImg, String intro, String openChatUrl) {
         if (name != null) this.name = name;
