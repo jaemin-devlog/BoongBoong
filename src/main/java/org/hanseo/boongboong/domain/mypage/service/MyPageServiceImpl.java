@@ -256,20 +256,42 @@ public class MyPageServiceImpl implements MyPageService {
         String dest = m.getToName() != null ? m.getToName() : m.getToKey();
         String memo = driverPost != null ? driverPost.getMemo() : null;
         Long postId = driverPost != null ? driverPost.getId() : null;
+        // Determine counterpart (the other party) for display
+        Long partnerUserId = null;
+        User counterpart = null;
+        if (mm.getRole() == org.hanseo.boongboong.domain.carpool.type.PostRole.RIDER) {
+            counterpart = driver;
+            partnerUserId = driver.getId();
+        } else {
+            // DRIVER: pick first non-cancelled rider, if any
+            var riderOpt = matchMemberRepo.findByMatchId(m.getId()).stream()
+                    .filter(x -> x.getRole() == org.hanseo.boongboong.domain.carpool.type.PostRole.RIDER
+                            && x.getAttend() != org.hanseo.boongboong.domain.match.type.AttendanceStatus.CANCELLED)
+                    .findFirst();
+            if (riderOpt.isPresent()) {
+                counterpart = riderOpt.get().getUser();
+                partnerUserId = counterpart.getId();
+            }
+        }
+
+        String profileImg = (counterpart != null ? counterpart.getProfileImg() : driver.getProfileImg());
+        String nick = (counterpart != null ? counterpart.getNickname() : driver.getNickname());
+        Integer trust = (counterpart != null ? counterpart.getTrustScore() : driver.getTrustScore());
+
         return new OngoingCarpoolRes(
                 m.getId(),
                 mm.getId(),
                 postId,
-                (mm.getRole() == org.hanseo.boongboong.domain.carpool.type.PostRole.RIDER) ? driver.getId() : null,
+                partnerUserId,
                 mm.getRole(),
                 origin,
                 dest,
                 m.getDate(),
                 m.getTime(),
-                driver.getProfileImg(),
-                driver.getNickname(),
+                profileImg,
+                nick,
                 memo,
-                driver.getTrustScore()
+                trust
         );
     }
 
