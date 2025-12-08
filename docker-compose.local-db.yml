@@ -5,6 +5,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    environment:
+      MYSQLHOST: db
+      MYSQLPORT: 3306
+      MYSQLDATABASE: boongboong
+      MYSQLUSER: root
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-devpass}
 
   db:
     image: mysql:8.0
@@ -28,4 +34,3 @@ services:
 
 volumes:
   db-data:
-
