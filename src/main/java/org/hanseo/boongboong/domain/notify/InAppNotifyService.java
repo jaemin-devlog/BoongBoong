@@ -1,5 +1,6 @@
 package org.hanseo.boongboong.domain.notify;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -17,6 +18,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * - Each authenticated user can open an SSE stream; we push events into it.
  * - Other services can call the same API surface to deliver events.
  */
+@Slf4j
 @Service
 public class InAppNotifyService {
 
@@ -38,9 +40,20 @@ public class InAppNotifyService {
         // Use CopyOnWriteArrayList to avoid ConcurrentModificationException while iterating during sends
         emittersByUser.computeIfAbsent(email, k -> new CopyOnWriteArrayList<>()).add(emitter);
 
-        emitter.onCompletion(() -> removeEmitter(email, emitter));
-        emitter.onTimeout(() -> removeEmitter(email, emitter));
-        emitter.onError(e -> removeEmitter(email, emitter));
+        log.debug("[SSE] subscribe start email={} total={}", email, emittersByUser.get(email).size());
+
+        emitter.onCompletion(() -> {
+            log.debug("[SSE] onCompletion email={}", email);
+            removeEmitter(email, emitter);
+        });
+        emitter.onTimeout(() -> {
+            log.debug("[SSE] onTimeout email={}", email);
+            removeEmitter(email, emitter);
+        });
+        emitter.onError(e -> {
+            log.debug("[SSE] onError email={} err={}", email, e.toString());
+            removeEmitter(email, emitter);
+        });
 
         try {
             SseEmitter.SseEventBuilder builder = SseEmitter.event()
@@ -49,6 +62,7 @@ public class InAppNotifyService {
                     .reconnectTime(3000);
             emitter.send(builder);
         } catch (IOException ignored) {
+            log.debug("[SSE] init send failed email={}", email);
             removeEmitter(email, emitter);
         }
         return emitter;
@@ -62,6 +76,7 @@ public class InAppNotifyService {
                 // Best-effort cleanup to avoid empty lists lingering
                 emittersByUser.remove(email, list);
             }
+            log.debug("[SSE] emitter removed email={} remain={}", email, list.size());
         }
     }
 
@@ -82,6 +97,7 @@ public class InAppNotifyService {
         if (list == null || list.isEmpty()) return;
 
         List<SseEmitter> broken = new ArrayList<>();
+        log.debug("[SSE] send email={} type={} targets={}", email, event.type(), list.size());
         for (SseEmitter emitter : list) {
             try {
                 SseEmitter.SseEventBuilder builder = SseEmitter.event()
@@ -90,9 +106,13 @@ public class InAppNotifyService {
                         .reconnectTime(3000);
                 emitter.send(builder);
             } catch (IOException e) {
+                log.debug("[SSE] send error email={} err={}", email, e.toString());
                 broken.add(emitter);
             }
         }
-        if (!broken.isEmpty()) list.removeAll(broken);
+        if (!broken.isEmpty()) {
+            list.removeAll(broken);
+            log.debug("[SSE] removed broken emitters email={} count={}", email, broken.size());
+        }
     }
 }
