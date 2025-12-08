@@ -105,6 +105,24 @@ public class MatchService {
             memRepo.save(MatchMember.rider(locked, rider, r.getSeats()));
             r.approve();
 
+            // Push opponent open chat link via SSE to both parties
+            notifyService.toUser(
+                    rider.getEmail(),
+                    NotificationType.REQUEST_APPROVED,
+                    locked.getId(),
+                    r.getId(),
+                    "REQUEST_APPROVED",
+                    locked.getDriver().getOpenChatUrl()
+            );
+            notifyService.toUser(
+                    locked.getDriver().getEmail(),
+                    NotificationType.REQUEST_APPROVED,
+                    locked.getId(),
+                    r.getId(),
+                    "REQUEST_APPROVED",
+                    rider.getOpenChatUrl()
+            );
+
             // 인앱 알림: 양측에 승인 알림
             notifyService.toUser(
                     rider.getEmail(),
@@ -159,6 +177,24 @@ public class MatchService {
             }
 
             r.approve();
+
+            // Push opponent open chat link via SSE to both parties
+            notifyService.toUser(
+                    driver.getEmail(),
+                    NotificationType.REQUEST_APPROVED,
+                    locked.getId(),
+                    r.getId(),
+                    "REQUEST_APPROVED",
+                    receiver.getOpenChatUrl()
+            );
+            notifyService.toUser(
+                    receiver.getEmail(),
+                    NotificationType.REQUEST_APPROVED,
+                    locked.getId(),
+                    r.getId(),
+                    "REQUEST_APPROVED",
+                    driver.getOpenChatUrl()
+            );
 
             // 인앱 알림: 양측에 승인 알림
             notifyService.toUser(
