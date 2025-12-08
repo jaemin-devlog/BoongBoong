@@ -102,7 +102,9 @@ public class MyPageServiceImpl implements MyPageService {
     @Override
     public List<MyPostRes> myPosts(String userEmail) {
         User user = findUser(userEmail);
-        return postRepo.findTop50ByUserIdOrderByCreatedAtDesc(user.getId())
+        // Limit to 50, fetch author with posts to avoid N+1
+        var page = org.springframework.data.domain.PageRequest.of(0, 50);
+        return postRepo.findRecentByUserIdFetchUser(user.getId(), page)
                 .stream()
                 .map(this::toMyPostRes)
                 .toList();

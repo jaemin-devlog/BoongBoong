@@ -28,13 +28,15 @@ public interface MatchMemberRepo extends JpaRepository<MatchMember, Long> {
 
     boolean existsByMatchIdAndUserEmail(Long matchId, String email);
 
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"user"})
     List<MatchMember> findByMatchId(Long matchId);
 
     // MyPage: upcoming/completed lists by user
     @Query("""
            select mm
              from MatchMember mm
-             join mm.match m
+             join fetch mm.match m
+             join fetch m.driver
             where mm.user.email = :email
               and m.date = :today and m.time <= :now
               and m.status in (org.hanseo.boongboong.domain.match.type.MatchStatus.OPEN, org.hanseo.boongboong.domain.match.type.MatchStatus.LOCKED)
@@ -47,7 +49,8 @@ public interface MatchMemberRepo extends JpaRepository<MatchMember, Long> {
     @Query("""
            select mm
              from MatchMember mm
-             join mm.match m
+             join fetch mm.match m
+             join fetch m.driver
             where mm.user.email = :email
               and (m.date > :today or (m.date = :today and m.time >= :now))
               and m.status in (org.hanseo.boongboong.domain.match.type.MatchStatus.OPEN, org.hanseo.boongboong.domain.match.type.MatchStatus.LOCKED)

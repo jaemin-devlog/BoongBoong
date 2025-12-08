@@ -12,12 +12,12 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 /**
- * 카풀 게시글 리포지토리.
- * - 장소 키 기반 페이지 검색, 마이페이지용 목록/다가올 일정 조회 제공
+ * 카�? 게시글 리포지?�리.
+ * - ?�소 ??기반 ?�이지 검?? 마이?�이지??목록/?��????�정 조회 ?�공
  */
 public interface PostRepo extends JpaRepository<Post, Long> {
 
-    // ===== 검색 =====
+    // ===== 검??=====
     @Query("""
            select p
              from Post p
@@ -57,10 +57,10 @@ public interface PostRepo extends JpaRepository<Post, Long> {
                                      @Param("type") PostRole type,
                                      Pageable pageable);
 
-    // ===== MyPage용 =====
-    List<Post> findTop50ByUserIdOrderByCreatedAtDesc(Long userId); // 내가 올린 최신 50
+    // ===== MyPage??=====
+    List<Post> findTop50ByUserIdOrderByCreatedAtDesc(Long userId); // ?��? ?�린 최신 50
 
-    /** 가장 가까운 '다가올' 카풀 후보들을 정렬해서 모두 반환 (서비스에서 첫 1개만 선택) */
+    /** 가??가까운 '?��??? 카�? ?�보?�을 ?�렬?�서 모두 반환 (?�비?�에??�?1개만 ?�택) */
     @Query("""
            select p
              from Post p
@@ -72,7 +72,7 @@ public interface PostRepo extends JpaRepository<Post, Long> {
                                            @Param("today") LocalDate today,
                                            @Param("now") LocalTime now);
 
-    /** '다가올' 카풀 전체 리스트 */
+    /** '?��??? 카�? ?�체 리스??*/
     @Query("""
            select p
              from Post p
@@ -84,7 +84,7 @@ public interface PostRepo extends JpaRepository<Post, Long> {
                                                                                @Param("today") LocalDate today,
                                                                                @Param("now") LocalTime now);
                                        
-                                           /** '완료된' 카풀 전체 리스트 */
+                                           /** '?�료?? 카�? ?�체 리스??*/
                                            @Query("""
                                                   select p
                                                     from Post p
@@ -95,8 +95,4 @@ public interface PostRepo extends JpaRepository<Post, Long> {
                                            List<Post> findAllCompletedByAuthor(@Param("userId") Long userId,
                                                                                @Param("today") LocalDate today,
                                                                                @Param("now") LocalTime now);
-
-    /** Optimized recent posts for MyPage: fetch author to avoid N+1 and allow limiting */
-    @Query("select p from Post p join fetch p.user where p.user.id = :userId order by p.createdAt desc")
-    List<Post> findRecentByUserIdFetchUser(@Param("userId") Long userId, Pageable pageable);
-}
+                                       }
