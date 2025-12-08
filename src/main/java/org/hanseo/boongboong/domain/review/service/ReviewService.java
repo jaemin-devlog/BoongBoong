@@ -2,8 +2,10 @@ package org.hanseo.boongboong.domain.review.service;
 
 import lombok.RequiredArgsConstructor;
 import org.hanseo.boongboong.domain.match.entity.Match;
+import org.hanseo.boongboong.domain.match.entity.MatchMember;
 import org.hanseo.boongboong.domain.match.repository.MatchMemberRepo;
 import org.hanseo.boongboong.domain.match.repository.MatchRepo;
+import org.hanseo.boongboong.domain.match.type.AttendanceStatus;
 import org.hanseo.boongboong.domain.match.type.MatchStatus;
 import org.hanseo.boongboong.domain.review.dto.ReviewDtos.*;
 import org.hanseo.boongboong.domain.review.entity.Review;
@@ -38,7 +40,7 @@ public class ReviewService {
         Match match = matchRepo.findById(matchId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.MATCH_NOT_FOUND));
         if (match.getStatus() != MatchStatus.COMPLETED) {
-            throw new BusinessException(ErrorCode.INVALID_STATE);
+            return new CanReviewRes(false, false);
         }
         User target = userRepo.findById(targetUserId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
@@ -49,7 +51,10 @@ public class ReviewService {
         }
 
         boolean already = reviewRepo.existsByMatchIdAndReviewerIdAndTargetId(match.getId(), reviewer.getId(), target.getId());
-        return new CanReviewRes(!already, already);
+        var reviewerMmOpt = matchMemberRepo.findByMatchIdAndUserEmail(match.getId(), reviewer.getEmail());
+        boolean riderCompleted = reviewerMmOpt.map(mm -> mm.getAttend() == AttendanceStatus.ATTENDED).orElse(false);
+        boolean can = (!already) && (reviewerMmOpt.isPresent() && (mmIsDriver(reviewerMmOpt.get()) || riderCompleted));
+        return new CanReviewRes(can, already);
     }
 
     public Long create(String reviewerEmail, CreateReq req) {
@@ -63,15 +68,20 @@ public class ReviewService {
         User target = userRepo.findById(req.targetUserId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        // 둘 다 해당 매치의 멤버인지 검증
         if (!matchMemberRepo.existsByMatchIdAndUserId(match.getId(), reviewer.getId()) ||
             !matchMemberRepo.existsByMatchIdAndUserId(match.getId(), target.getId())) {
             throw new BusinessException(ErrorCode.ACCESS_DENIED);
         }
 
-        // 중복 리뷰 방지
         if (reviewRepo.existsByMatchIdAndReviewerIdAndTargetId(match.getId(), reviewer.getId(), target.getId())) {
             throw new BusinessException(ErrorCode.INVALID_STATE);
+        }
+
+        var reviewerMmOpt = matchMemberRepo.findByMatchIdAndUserEmail(match.getId(), reviewer.getEmail());
+        if (reviewerMmOpt.isPresent() && !mmIsDriver(reviewerMmOpt.get())) {
+            if (reviewerMmOpt.get().getAttend() != AttendanceStatus.ATTENDED) {
+                throw new BusinessException(ErrorCode.INVALID_STATE);
+            }
         }
 
         Review saved = reviewRepo.save(Review.builder()
@@ -82,8 +92,7 @@ public class ReviewService {
                 .comment(req.comment())
                 .build());
 
-        // 신뢰 점수 가점 기록 및 사용자 점수 반영
-        target.updateProfileBasics(null, null, null, null, null); // touch to mark dirty if needed
+        target.updateProfileBasics(null, null, null, null, null);
         target.setTrustScore(target.getTrustScore() + REVIEW_BONUS);
         userRepo.save(target);
 
@@ -97,5 +106,9 @@ public class ReviewService {
                 .build());
 
         return saved.getId();
+    }
+
+    private boolean mmIsDriver(MatchMember mm) {
+        return mm.getRole() == org.hanseo.boongboong.domain.carpool.type.PostRole.DRIVER;
     }
 }

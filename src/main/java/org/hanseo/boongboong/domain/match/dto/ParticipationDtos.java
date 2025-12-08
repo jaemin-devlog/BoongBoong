@@ -26,4 +26,9 @@ public class ParticipationDtos {
     public record CompleteMatchReq(
             @NotNull Long matchId
     ) {}
+
+    // Rider confirms own completion
+    public record RiderCompleteReq(
+            @NotNull Long matchId
+    ) {}
 }

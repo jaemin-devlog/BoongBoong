@@ -55,4 +55,14 @@ public class ParticipationController {
         participationService.completeMatch(email, req.matchId());
         return ResponseEntity.ok().build();
     }
+
+    /** 라이더가 본인 동행 완료 확인 */
+    @PostMapping("/rider/complete")
+    public ResponseEntity<Void> riderComplete(
+            @AuthenticationPrincipal(expression = "username") String email,
+            @Valid @RequestBody RiderCompleteReq req
+    ) {
+        participationService.completeAsRider(email, req.matchId());
+        return ResponseEntity.ok().build();
+    }
 }

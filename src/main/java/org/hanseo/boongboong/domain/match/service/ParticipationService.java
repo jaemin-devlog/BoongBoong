@@ -133,6 +133,24 @@ public class ParticipationService {
         // TODO: MatchCompletedEvent (웹푸시)
     }
 
+    /** 라이더가 본인 동행 완료 확인 (리뷰 가능 조건 충족용) */
+    public void completeAsRider(String riderEmail, Long matchId) {
+        Match match = matchRepo.findById(matchId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.MATCH_NOT_FOUND));
+
+        var mmOpt = memberRepo.findByMatchIdAndUserEmail(matchId, riderEmail);
+        if (mmOpt.isEmpty()) throw new BusinessException(ErrorCode.ACCESS_DENIED);
+        MatchMember mm = mmOpt.get();
+
+        if (mm.getAttend() == AttendanceStatus.CANCELLED || mm.getAttend() == AttendanceStatus.NO_SHOW) {
+            throw new BusinessException(ErrorCode.INVALID_STATE);
+        }
+
+        if (mm.getAttend() != AttendanceStatus.ATTENDED) {
+            mm.setAttend(AttendanceStatus.ATTENDED);
+        }
+    }
+
     // ---------
     // helpers
     // ---------
