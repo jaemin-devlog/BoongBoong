@@ -65,3 +65,8 @@ app:
         - outlook.com
   signup:
     require-email-verification: true
+
+# Enable SSE-only debug logs in prod for tracing
+logging:
+  level:
+    org.hanseo.boongboong.domain.notify: DEBUG
