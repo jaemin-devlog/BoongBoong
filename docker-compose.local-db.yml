@@ -21,8 +21,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-devpass}
       MYSQL_DATABASE: boongboong
-    ports:
-      - "3306:3306"
+    # Do not expose MySQL on host; app connects via Docker network
     volumes:
       - db-data:/var/lib/mysql
     healthcheck:
