@@ -1,11 +1,10 @@
 server:
-  # Bind to Render's provided PORT if present (fallback 8080)
   port: ${PORT:8080}
   servlet:
     session:
       cookie:
-        same-site: None   # allow cross-site XHR with credentials
-        secure: true      # required by browsers when SameSite=None; ensure HTTPS
+        same-site: None
+        secure: true
         http-only: true
   compression:
     enabled: true
@@ -20,6 +19,7 @@ spring:
   threads:
     virtual:
       enabled: true
+
   datasource:
     url: jdbc:mysql://${MYSQLHOST}:${MYSQLPORT}/${MYSQLDATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull
     username: ${MYSQLUSER}
@@ -65,5 +65,3 @@ app:
         - outlook.com
   signup:
     require-email-verification: true
-
- 
