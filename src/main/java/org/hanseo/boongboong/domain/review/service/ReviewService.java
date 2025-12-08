@@ -31,6 +31,27 @@ public class ReviewService {
 
     private static final int REVIEW_BONUS = 5;
 
+    @Transactional(readOnly = true)
+    public CanReviewRes canReview(String reviewerEmail, Long matchId, Long targetUserId) {
+        User reviewer = userRepo.findByEmail(reviewerEmail)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        Match match = matchRepo.findById(matchId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.MATCH_NOT_FOUND));
+        if (match.getStatus() != MatchStatus.COMPLETED) {
+            throw new BusinessException(ErrorCode.INVALID_STATE);
+        }
+        User target = userRepo.findById(targetUserId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        if (!matchMemberRepo.existsByMatchIdAndUserId(match.getId(), reviewer.getId()) ||
+            !matchMemberRepo.existsByMatchIdAndUserId(match.getId(), target.getId())) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
+        }
+
+        boolean already = reviewRepo.existsByMatchIdAndReviewerIdAndTargetId(match.getId(), reviewer.getId(), target.getId());
+        return new CanReviewRes(!already, already);
+    }
+
     public Long create(String reviewerEmail, CreateReq req) {
         User reviewer = userRepo.findByEmail(reviewerEmail)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
@@ -78,4 +99,3 @@ public class ReviewService {
         return saved.getId();
     }
 }
-

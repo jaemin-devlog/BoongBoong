@@ -23,5 +23,13 @@ public class ReviewController {
         Long id = reviewService.create(email, req);
         return ResponseEntity.ok(new IdRes(id));
     }
-}
 
+    @GetMapping("/can")
+    public ResponseEntity<CanReviewRes> canReview(
+            @AuthenticationPrincipal(expression = "username") String email,
+            @RequestParam("matchId") Long matchId,
+            @RequestParam("targetUserId") Long targetUserId
+    ) {
+        return ResponseEntity.ok(reviewService.canReview(email, matchId, targetUserId));
+    }
+}

@@ -11,5 +11,9 @@ public class ReviewDtos {
     ) {}
 
     public record IdRes(Long id) {}
-}
 
+    public record CanReviewRes(
+            boolean canReview,
+            boolean alreadyReviewed
+    ) {}
+}
