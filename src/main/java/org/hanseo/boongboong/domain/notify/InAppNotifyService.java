@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Lightweight in-app notification service backed by Server-Sent Events (SSE).
@@ -34,7 +35,8 @@ public class InAppNotifyService {
 
     public SseEmitter subscribe(String email) {
         SseEmitter emitter = new SseEmitter(DEFAULT_TIMEOUT_MS);
-        emittersByUser.computeIfAbsent(email, k -> new ArrayList<>()).add(emitter);
+        // Use CopyOnWriteArrayList to avoid ConcurrentModificationException while iterating during sends
+        emittersByUser.computeIfAbsent(email, k -> new CopyOnWriteArrayList<>()).add(emitter);
 
         emitter.onCompletion(() -> removeEmitter(email, emitter));
         emitter.onTimeout(() -> removeEmitter(email, emitter));
@@ -54,7 +56,13 @@ public class InAppNotifyService {
 
     private void removeEmitter(String email, SseEmitter emitter) {
         List<SseEmitter> list = emittersByUser.get(email);
-        if (list != null) list.remove(emitter);
+        if (list != null) {
+            list.remove(emitter);
+            if (list.isEmpty()) {
+                // Best-effort cleanup to avoid empty lists lingering
+                emittersByUser.remove(email, list);
+            }
+        }
     }
 
     public void toUser(String email, NotificationType type, Long matchId, Long requestId, String message) {
@@ -88,4 +96,3 @@ public class InAppNotifyService {
         if (!broken.isEmpty()) list.removeAll(broken);
     }
 }
-
