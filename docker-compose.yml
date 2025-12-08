@@ -7,26 +7,51 @@ services:
       dockerfile: Dockerfile
     image: boongboong-app:latest
     environment:
-      # Spring profile and server port
       SPRING_PROFILES_ACTIVE: prod
       PORT: ${PORT:-8080}
 
-      # DB connection (reads from .env by default)
-      MYSQLHOST: ${MYSQLHOST}
-      MYSQLPORT: ${MYSQLPORT}
+      # DB connection from env
+      MYSQLHOST: db
+      MYSQLPORT: 3306
       MYSQLDATABASE: ${MYSQLDATABASE}
       MYSQLUSER: ${MYSQLUSER}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
 
-      # Mail credentials (from .env)
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
 
-      # JVM options (can be overridden)
       JAVA_OPTS: -Djava.security.egd=file:/dev/./urandom -XX:MaxRAMPercentage=75 -XX:+UseSerialGC
+
     ports:
       - "8081:8080"
+    depends_on:
+      - db
     volumes:
-      # Persist uploaded files
       - ./uploads:/app/uploads
     restart: unless-stopped
+    networks:
+      - boongboong-net
+
+  db:
+    image: mysql:8.0
+    container_name: boongboong-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQLDATABASE}
+      MYSQL_USER: ${MYSQLUSER}
+      MYSQL_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "3306:3306"
+    command:
+      - --default-authentication-plugin=mysql_native_password
+    volumes:
+      - db-data:/var/lib/mysql
+    restart: unless-stopped
+    networks:
+      - boongboong-net
+
+volumes:
+  db-data:
+
+networks:
+  boongboong-net:
