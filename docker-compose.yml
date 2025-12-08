@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: boongboong-app:latest
+    environment:
+      # Spring profile and server port
+      SPRING_PROFILES_ACTIVE: prod
+      PORT: 8080
+
+      # DB connection (matches src/main/resources/application-prod.yml)
+      MYSQLHOST: db
+      MYSQLPORT: 3306
+      MYSQLDATABASE: boongboong
+      MYSQLUSER: root
+      # Spring app reads password from MYSQL_ROOT_PASSWORD env
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-devpass}
+
+      # Mail (set real credentials or override via .env)
+      MAIL_USERNAME: ${MAIL_USERNAME:-your@gmail.com}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-your_app_password}
+
+      # JVM options (can be overridden)
+      JAVA_OPTS: -Djava.security.egd=file:/dev/./urandom -XX:MaxRAMPercentage=75 -XX:+UseSerialGC
+    ports:
+      - "8080:8080"
+    volumes:
+      # Persist uploaded files
+      - ./uploads:/app/uploads
+    restart: unless-stopped
+
