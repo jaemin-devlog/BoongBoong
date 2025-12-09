@@ -11,6 +11,7 @@ import org.hanseo.boongboong.domain.match.type.MatchStatus;
 import org.hanseo.boongboong.domain.trust.entity.TrustPointHistory;
 import org.hanseo.boongboong.domain.trust.repository.TrustPointHistoryRepo;
 import org.hanseo.boongboong.domain.trust.type.TrustReason;
+import org.hanseo.boongboong.domain.user.repository.UserRepository;
 import org.hanseo.boongboong.global.exception.BusinessException;
 import org.hanseo.boongboong.global.exception.ErrorCode;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class ParticipationService {
     private final MatchRepo matchRepo;
     private final MatchMemberRepo memberRepo;
     private final TrustPointHistoryRepo trustRepo;
+    private final UserRepository userRepo;
 
     /** 라이더 본인이 자신의 참여를 취소 (당일이면 -5) */
     public void cancelAsRider(String email, Long matchId, Long memberId) {
@@ -53,6 +55,9 @@ public class ParticipationService {
 
         // 당일 취소면 -5 벌점
         if (isSameDay(match)) {
+            var user = mm.getUser();
+            user.setTrustScore(user.getTrustScore() - 5);
+            userRepo.save(user);
             trustRepo.save(TrustPointHistory.builder()
                     .user(mm.getUser())
                     .match(match)
@@ -84,6 +89,10 @@ public class ParticipationService {
             throw new BusinessException(ErrorCode.INVALID_STATE);
 
         mm.setAttend(AttendanceStatus.NO_SHOW);
+
+        var user = mm.getUser();
+        user.setTrustScore(user.getTrustScore() - 10);
+        userRepo.save(user);
 
         trustRepo.save(TrustPointHistory.builder()
                 .user(mm.getUser())
