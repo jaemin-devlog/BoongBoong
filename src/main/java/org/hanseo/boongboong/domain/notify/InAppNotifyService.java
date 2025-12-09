@@ -2,6 +2,7 @@ package org.hanseo.boongboong.domain.notify;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -32,13 +33,23 @@ public class InAppNotifyService {
     ) {}
 
     private static final long DEFAULT_TIMEOUT_MS = 60L * 60 * 1000; // 1 hour
+    private static final long HEARTBEAT_INTERVAL_MS = 15_000; // 15s keepalive
 
     private final Map<String, List<SseEmitter>> emittersByUser = new ConcurrentHashMap<>();
 
     public SseEmitter subscribe(String email) {
         SseEmitter emitter = new SseEmitter(DEFAULT_TIMEOUT_MS);
         // Use CopyOnWriteArrayList to avoid ConcurrentModificationException while iterating during sends
-        emittersByUser.computeIfAbsent(email, k -> new CopyOnWriteArrayList<>()).add(emitter);
+        List<SseEmitter> list = emittersByUser.computeIfAbsent(email, k -> new CopyOnWriteArrayList<>());
+
+        // Enforce a single live emitter per user to prevent leaks/duplication
+        if (!list.isEmpty()) {
+            for (SseEmitter old : list) {
+                try { old.complete(); } catch (Exception ignored) {}
+            }
+            list.clear();
+        }
+        list.add(emitter);
 
         log.debug("[SSE] subscribe start email={} total={}", email, emittersByUser.get(email).size());
 
@@ -113,6 +124,30 @@ public class InAppNotifyService {
         if (!broken.isEmpty()) {
             list.removeAll(broken);
             log.debug("[SSE] removed broken emitters email={} count={}", email, broken.size());
+        }
+    }
+
+    // Heartbeat to keep connections alive behind proxies and detect dead clients
+    @Scheduled(fixedDelay = HEARTBEAT_INTERVAL_MS)
+    void heartbeat() {
+        if (emittersByUser.isEmpty()) return;
+        for (Map.Entry<String, List<SseEmitter>> entry : emittersByUser.entrySet()) {
+            String email = entry.getKey();
+            List<SseEmitter> list = entry.getValue();
+            if (list == null || list.isEmpty()) continue;
+            List<SseEmitter> broken = new ArrayList<>();
+            for (SseEmitter emitter : list) {
+                try {
+                    // Small ping event; also triggers error if the connection is gone
+                    emitter.send(SseEmitter.event().name("ping").data("\uD83D\uDD0B", MediaType.TEXT_PLAIN));
+                } catch (IOException e) {
+                    broken.add(emitter);
+                }
+            }
+            if (!broken.isEmpty()) {
+                list.removeAll(broken);
+                log.debug("[SSE] heartbeat cleared {} dead emitters for {}", broken.size(), email);
+            }
         }
     }
 }
